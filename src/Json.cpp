@@ -1,11 +1,16 @@
 #include "Json.h"
 
+#include <iomanip>
+
+namespace njson {
+
 //	Value union constructors (w/ move semantics)
-Json::Value::Value() : number(0) {}
+Json::Value::Value() : i(0) {}
 Json::Value::Value(Array&& array) : array(std::move(array)) {}
 Json::Value::Value(Object&& object) : object(std::move(object)) {}
 Json::Value::Value(const std::string& str) : str(str) {}
-Json::Value::Value(double d) : number(d) {}
+Json::Value::Value(double d) : d(d) {}
+Json::Value::Value(int i) : i(i) {}
 Json::Value::Value(bool b) : boolean(b) {}
 
 Json::Value::~Value() {}
@@ -20,7 +25,8 @@ Json::Json(Object&& object)
 Json::Json() : m_type(Type::NULL_T) {}
 Json::Json(const std::string& str) : m_type(Type::STRING), m_value(str) {}
 Json::Json(const char* str) : m_type(Type::STRING), m_value(std::string{str}) {}
-Json::Json(double d) : m_type(Type::NUMBER) , m_value(d) {}
+Json::Json(double d) : m_type(Type::DOUBLE) , m_value(d) {}
+Json::Json(int i) : m_type(Type::INT) , m_value(i) {}
 Json::Json(bool b) : m_type(Type::BOOL) , m_value(b) {}
 
 //	Destructor
@@ -47,7 +53,7 @@ Json::~Json()
 void	Json::destroyArray()
 {
 	//	delete individual elements
-	for (auto json : getArray())
+	for (auto* json : getArray())
 		delete json;
 	//	Call destructor of vector
 	getArray().~vector();
@@ -102,8 +108,11 @@ void	Json::print(size_t depth) const
 {
 	switch (getType())
 	{
-		case Type::NUMBER :
-			std::cout << getNumber();
+		case Type::DOUBLE :
+			std::cout << std::setprecision(15) << getDouble();
+			break;
+		case Type::INT :
+			std::cout << getInt();
 			break;
 		case Type::BOOL :
 			if (getBool())
@@ -167,3 +176,5 @@ void	Json::printArray(size_t depth) const
 		printDepth(depth);
 	std::cout << " ]";
 }
+
+}	//	namespace njson

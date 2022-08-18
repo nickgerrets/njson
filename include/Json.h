@@ -3,6 +3,8 @@
 #include <memory>
 #include <iostream>
 
+namespace njson {
+
 /*
 	In essence the Json class just holds it's type and value,
 	with value being an union. The complexity comes from the
@@ -26,6 +28,7 @@ class Json
 			Value(Object&& object);
 			Value(const std::string& str);
 			Value(double d);
+			Value(int i);
 			Value(bool b);
 
 			//	Destructor
@@ -35,18 +38,19 @@ class Json
 			Array		array;
 			Object		object;
 			std::string	str;
-			double		number;
+			double		d;
+			int			i;
 			bool		boolean;
 		};
 
-	public:
 		enum class Type
 		{
 			NULL_T,
 			ARRAY,
 			OBJECT,
 			STRING,
-			NUMBER,
+			DOUBLE,
+			INT,
 			BOOL
 		};
 
@@ -57,6 +61,7 @@ class Json
 		Json(Object&& object);
 		Json(const std::string& str);
 		Json(const char* str);	//	This one is in there so you can use a string-literal
+		Json(int i);
 		Json(double d);
 		Json(bool b);
 
@@ -67,16 +72,18 @@ class Json
 		Array&				getArray() { return m_value.array; }
 		Object&				getObject() { return m_value.object; }
 		const std::string&	getString() const { return m_value.str; }
-		double				getNumber() const { return m_value.number; }
+		double				getDouble() const { return m_value.d; }
+		int					getInt() const { return m_value.i; }
 		bool				getBool() const { return m_value.boolean; }
 		Type				getType() const { return m_type; }
 
 		void	addToObject(const Key& key, Json* value);
 		void	addToArray(Json* value);
 
-		//	Not sure if I should leave this in
+		//	Find method to get the value out of the Object map
 		Json&	find(const Key& key);
 
+		//	Find method for chain-finding in Object maps
 		template<typename... Args>
 		Json&	find(const Key& first, Args... keys)
 		{
@@ -101,3 +108,8 @@ class Json
 		Value	m_value;
 
 };
+
+Json*	parse(const char* fname);
+Json*	parse(const std::string& fname);
+
+}	//	namespace njson

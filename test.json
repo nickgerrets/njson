@@ -1,0 +1,12 @@
+{
+	"key" : [ "hello"  , {} ],
+	"key with multiple words" : 
+	{
+		"banana" : "bananas more bananas",
+		"more_object" : {},
+		"bool" : false,
+		"bool2" : true,
+		"null" : null
+	},
+	"string" : 120953.38844
+}

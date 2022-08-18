@@ -176,7 +176,6 @@ static Json*	stateString(std::ifstream& file)
 	std::cerr << "TEST entered STRING" << std::endl;
 
 	file.unget();
-	skipWS(file);
 	std::string	str = getNextToken(file);
 
 	if (str.back() != '\"')
@@ -193,6 +192,7 @@ static Json*	stateNumber(std::ifstream& file)
 	std::cerr << "TEST entered NUMBER" << std::endl;
 	std::string	str;
 
+	file.unget();
 	str = getNextToken(file);
 
 	if (str.empty())

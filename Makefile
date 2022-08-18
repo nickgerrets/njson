@@ -5,8 +5,8 @@ BIN_DIR ?= ./
 BUILD_DIR ?= ./build
 SRC_DIRS ?= ./src ./include
 INC_DIRS ?= ./include
-CPPFLAGS ?= -Wall -Wextra -std=c++11 -g -fsanitize=address
-LDFLAGS ?= -g -fsanitize=address
+CPPFLAGS ?= -Wall -Wextra -std=c++11
+LDFLAGS ?=
 
 # CXX := g++
 

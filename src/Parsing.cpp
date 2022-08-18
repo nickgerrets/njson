@@ -68,7 +68,7 @@ static std::string	getNextToken(std::ifstream& file)
 		}
 	}
 
-	while (!isDelim(file.peek()) && !std::isspace(file.peek()))
+	while (!file.eof() && !isDelim(file.peek()) && !std::isspace(file.peek()))
 		str += file.get();
 
 	std::cout << "TEST token = |" << str << "| other" << std::endl;
@@ -284,7 +284,7 @@ Json*	parse(const char* fname)
 	std::ifstream	file;
 
 	file.open(fname);
-	if (file.bad())
+	if (file.bad() || file.fail())
 	{
 		std::cerr << "njson: [ERROR] Bad file." << std::endl;
 		return (NULL);

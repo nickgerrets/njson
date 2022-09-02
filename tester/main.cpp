@@ -4,7 +4,7 @@ int	main(void)
 {
 	using namespace njson;
 
-	Json*	json = parse("akfijajfaiw.json");
+	Json*	json = parse("webserv.json");
 	if (json)
 		json->print();
 	delete json;

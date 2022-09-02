@@ -50,7 +50,9 @@ static std::string	getNextToken(std::ifstream& file)
 
 	if (isDelim(str[0]))
 	{
+#ifdef DEBUG
 		std::cout << "TEST token = |" << str << "| delim" << std::endl;
+#endif
 		return (str);
 	}
 
@@ -62,7 +64,9 @@ static std::string	getNextToken(std::ifstream& file)
 			str += c;
 			if (c == '\"')
 			{
+#ifdef DEBUG
 				std::cout << "TEST token = |" << str << "| str" << std::endl;
+#endif
 				return (str);
 			}
 		}
@@ -70,15 +74,18 @@ static std::string	getNextToken(std::ifstream& file)
 
 	while (!file.eof() && !isDelim(file.peek()) && !std::isspace(file.peek()))
 		str += file.get();
-
+#ifdef DEBUG
 	std::cout << "TEST token = |" << str << "| other" << std::endl;
+#endif
 
 	return (str);
 }
 
 static Json*	stateObject(std::ifstream& file)
 {
+#ifdef DEBUG
 	std::cerr << "TEST entered OBJECT" << std::endl;
+#endif
 
 	Json*	object = new Json(Json::Object{});
 
@@ -135,7 +142,9 @@ static Json*	stateObject(std::ifstream& file)
 
 static Json*	stateArray(std::ifstream& file)
 {
+#ifdef DEBUG
 	std::cerr << "TEST entered ARRAY" << std::endl;
+#endif
 
 	Json*	array = new Json(Json::Array{});
 
@@ -146,7 +155,9 @@ static Json*	stateArray(std::ifstream& file)
 		if (c == ']')
 		{
 			file.get();
+#ifdef DEBUG
 			std::cout << "TEST token = |]| delim" << std::endl;
+#endif
 			return (array);
 		}
 		if (array->getArray().size() > 0)
@@ -154,7 +165,9 @@ static Json*	stateArray(std::ifstream& file)
 			if (c == ',')
 			{
 				file.get();
+#ifdef DEBUG
 				std::cout << "TEST token = |,| delim" << std::endl;
+#endif
 				skipWS(file);
 				c = file.peek();
 			}
@@ -173,7 +186,9 @@ static Json*	stateArray(std::ifstream& file)
 
 static Json*	stateString(std::ifstream& file)
 {
+#ifdef DEBUG
 	std::cerr << "TEST entered STRING" << std::endl;
+#endif
 
 	file.unget();
 	std::string	str = getNextToken(file);
@@ -189,7 +204,9 @@ static Json*	stateString(std::ifstream& file)
 
 static Json*	stateNumber(std::ifstream& file)
 {
+#ifdef DEBUG
 	std::cerr << "TEST entered NUMBER" << std::endl;
+#endif
 	std::string	str;
 
 	file.unget();
@@ -227,7 +244,9 @@ static Json*	stateNumber(std::ifstream& file)
 
 static Json*	stateWord(std::ifstream& file)
 {
+#ifdef DEBUG
 	std::cerr << "TEST entered WORD" << std::endl;
+#endif
 
 	file.unget();
 	skipWS(file);

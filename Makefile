@@ -1,7 +1,6 @@
 # ------------------- EDIT THIS SECTION -------------------
-TARGET ?= json
+TARGET ?= libnjson.a
 
-BIN_DIR ?= ./
 BUILD_DIR ?= ./build
 SRC_DIRS ?= ./src ./include
 INC_DIRS ?= ./include
@@ -24,11 +23,15 @@ CPPFLAGS += $(INC_FLAGS) -MMD -MP
 
 .PHONY: all
 
-all: $(BIN_DIR)/$(TARGET)
+all: $(TARGET)
 
-$(BIN_DIR)/$(TARGET): $(OBJS)
+tester: $(TARGET)
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I include/ -L./ -lnjson tester/main.cpp -o test
+
+$(TARGET): $(OBJS)
 	@echo "Linking..."
-	@$(CXX) $(OBJS) -o $@ $(LDFLAGS)
+	@ar -rv $(TARGET) $(OBJS) $(LDFLAGS)
+#	@$(CXX) $(OBJS) -o $@ 
 	@echo "Done!"
 
 # c++ source

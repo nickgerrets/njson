@@ -19,6 +19,17 @@ class Json
 		using Array = std::vector<Json*>;
 		using Object = std::unordered_map<Key, Json*>;
 
+		enum class Type
+		{
+			NULL_T,
+			ARRAY,
+			OBJECT,
+			STRING,
+			DOUBLE,
+			INT,
+			BOOL
+		};
+
 	private:
 		union Value
 		{
@@ -41,17 +52,6 @@ class Json
 			double		d;
 			int			i;
 			bool		boolean;
-		};
-
-		enum class Type
-		{
-			NULL_T,
-			ARRAY,
-			OBJECT,
-			STRING,
-			DOUBLE,
-			INT,
-			BOOL
 		};
 
 	public:

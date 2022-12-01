@@ -1,6 +1,7 @@
 #include "Json.h"
 
 #include <fstream>
+#include <iostream>
 
 namespace njson {
 

@@ -7,7 +7,7 @@ INC_DIRS ?= ./include
 CPPFLAGS ?= -Wall -Wextra -std=c++11
 LDFLAGS ?=
 
-# CXX := g++
+CXX := clang++
 
 # --------------------------- END -------------------------
 

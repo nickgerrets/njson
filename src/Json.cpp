@@ -98,83 +98,88 @@ Json&	Json::find(const Key& key)
 }
 
 //	Printing
-void	Json::printDepth(size_t depth) const
+void	Json::print(std::ostream& out) const
 {
-	while (depth-- > 0)
-		std::cout << "    ";
+	printImpl(0, out);
 }
 
-void	Json::print(size_t depth) const
+void	Json::printDepth(size_t depth, std::ostream& out) const
+{
+	while (depth-- > 0)
+		out << "  ";
+}
+
+void	Json::printImpl(size_t depth, std::ostream& out) const
 {
 	switch (getType())
 	{
 		case Type::DOUBLE :
-			std::cout << std::setprecision(15) << getDouble();
+			out << std::setprecision(15) << getDouble();
 			break;
 		case Type::INT :
-			std::cout << getInt();
+			out << getInt();
 			break;
 		case Type::BOOL :
 			if (getBool())
-				std::cout << "true";
+				out << "true";
 			else
-				std::cout << "false";
+				out << "false";
 			break;
 		case Type::STRING :
-			std::cout << '"' << getString() << '"';
+			out << '"' << getString() << '"';
 			break;
 		case Type::OBJECT :
-			printObject(depth);
+			printObject(depth, out);
 			break;
 		case Type::ARRAY :
-			printArray(depth);
+			printArray(depth, out);
 			break;
 		case Type::NULL_T :
-			std::cout << "null";
+			out << "null";
 			break;
 		default:
-			std::cout << "UNKNOWN_TYPE";
+			out << "UNKNOWN_TYPE";
 	}
 }
 
-void	Json::printObject(size_t depth) const
+void	Json::printObject(size_t depth, std::ostream& out) const
 {
-	std::cout << "\n";
-	printDepth(depth);
-	std::cout << '{';
+	out << "\n";
+	printDepth(depth, out);
+	out << '{';
 	if (m_value.object.size() == 0)
 	{
-		std::cout << '}' << std::endl;
+		out << '}' << std::endl;
 		return ;
 	}
-	std::cout << std::endl;
+	out << std::endl;
 	for (const auto& pair : m_value.object)
 	{
-		printDepth(depth + 1);
-		std::cout << '"' << pair.first << "\": ";
-		pair.second->print(depth + 1);
-		std::cout << std::endl;
+		printDepth(depth + 1, out);
+		out << '"' << pair.first << "\": ";
+		pair.second->printImpl(depth + 1, out);
+		out << std::endl;
 	}
-	printDepth(depth);
-	std::cout << '}' << std::endl;
+	printDepth(depth, out);
+	out << '}' << std::endl;
 }
 
-void	Json::printArray(size_t depth) const
+void	Json::printArray(size_t depth, std::ostream& out) const
 {
-	std::cout << "[ ";
+	out << "[ ";
 	for (size_t i = 0; i < m_value.array.size(); i++)
 	{
-		m_value.array[i]->print(depth + 1);
+		m_value.array[i]->printImpl(depth + 1, out);
 		if (i < m_value.array.size() - 1)
 		{
 			if (m_value.array[i]->getType() == Type::OBJECT)
-				printDepth(depth);
-			std::cout << ", ";
+				printDepth(depth, out);
+			out << ", ";
 		}
 	}
 	if (m_value.array[m_value.array.size() - 1]->getType() == Type::OBJECT)
-		printDepth(depth);
-	std::cout << " ]";
+		printDepth(depth, out);
+	out << " ]";
 }
 
 }	//	namespace njson

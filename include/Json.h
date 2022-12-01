@@ -1,7 +1,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
-#include <iostream>
+#include <ostream>
 
 namespace njson {
 
@@ -90,7 +90,7 @@ class Json
 			return (find(first).find(keys...));
 		}
 
-		void	print(size_t depth = 0) const;
+		void	print(std::ostream& out) const;
 
 	private:
 		//	Destruction of array and object types
@@ -98,10 +98,10 @@ class Json
 		void	destroyObject();
 
 		//	Printing
-		void	printDepth(size_t depth) const;
-		void	printObject(size_t depth) const;
-		void	printArray(size_t depth) const;
-
+		void	printImpl(size_t depth, std::ostream& out) const;
+		void	printDepth(size_t depth, std::ostream& out) const;
+		void	printObject(size_t depth, std::ostream& out) const;
+		void	printArray(size_t depth, std::ostream& out) const;
 
 	private:
 		Type	m_type;

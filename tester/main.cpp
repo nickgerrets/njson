@@ -1,12 +1,18 @@
 #include "Json.h"
 
+#include <fstream>
+#include <iostream>
+
 int	main(void)
 {
 	using namespace njson;
 
+	std::ofstream	file;
+	file.open("out.txt");
+
 	Json*	json = parse("webserv.json");
 	if (json)
-		json->print();
+		json->print(std::cout);
 	delete json;
 
 	return (0);

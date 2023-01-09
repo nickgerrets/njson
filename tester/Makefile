@@ -3,13 +3,13 @@ DEBUG ?= 1
 
 # -------------------      TARGET       -------------------
 
-TARGET ?= libnjson.a
+TARGET ?= test
 
 BUILD_DIR ?= ./build
 SRC_DIRS ?= ./src ./include
-INC_DIRS ?= ./include
+INC_DIRS ?= ./include ../include
 CPPFLAGS ?= -Wall -Wextra -std=c++11
-LDFLAGS ?=
+LDFLAGS ?= -L"../" -lnjson
 
 # --------------------------- END -------------------------
 
@@ -20,17 +20,13 @@ DEPS := $(OBJS_LIB:.o=.d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CPPFLAGS += $(INC_FLAGS) -MMD -MP
 
-.PHONY: all _tester
-all: $(TARGET) _tester
-
-_tester:
-	$(MAKE) -C "tester/"
-	@mv "tester/test" "./"
+.PHONY: all
+all: $(TARGET)
 
 # linking
 $(TARGET): $(OBJS)
 	@echo "Linking..."
-	@ar -rv $(TARGET) $(OBJS) $(LDFLAGS)
+	@$(CXX) -o $(TARGET) $(OBJS) $(LDFLAGS)
 	@echo "Done!"
 
 # compiling
@@ -39,15 +35,12 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	@echo "Compiling: " $<
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-.PHONY: clean fclean _tester_fclean re
+.PHONY: clean fclean re
 clean:
 	$(RM) -r $(BUILD_DIR)
 
 fclean: clean
 	$(RM) $(TARGET)
-
-_tester_fclean:
-	$(RM) "./test"
 
 re: clean all
 

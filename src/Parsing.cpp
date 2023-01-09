@@ -25,10 +25,10 @@ static bool	isDelim(char c)
 	return (c == ',' || c == ':' || c == '}' || c == '{' || c == '[' || c == ']');
 }
 
-static void	skipWS(std::ifstream& file)
+static void	skipWS(std::istream& stream)
 {
-	while (std::isspace(file.peek()))
-		file.get();
+	while (std::isspace(stream.peek()))
+		stream.get();
 }
 
 static void	trim(std::string& str)
@@ -43,11 +43,11 @@ static void	trim(std::string& str)
 		str.erase(p2, 1);
 }
 
-static std::string	getNextToken(std::ifstream& file)
+static std::string	getNextToken(std::istream& stream)
 {
-	skipWS(file);
+	stream >> std::ws;
 	
-	std::string str = {(char)file.get()};
+	std::string str = {(char)stream.get()};
 
 	if (isDelim(str[0]))
 	{
@@ -59,9 +59,9 @@ static std::string	getNextToken(std::ifstream& file)
 
 	if (str[0] == '"')
 	{
-		while (!file.eof())
+		while (!stream.eof())
 		{
-			char c = file.get();
+			char c = stream.get();
 			str += c;
 			if (c == '\"')
 			{
@@ -73,8 +73,8 @@ static std::string	getNextToken(std::ifstream& file)
 		}
 	}
 
-	while (!file.eof() && !isDelim(file.peek()) && !std::isspace(file.peek()))
-		str += file.get();
+	while (!stream.eof() && !isDelim(stream.peek()) && !std::isspace(stream.peek()))
+		str += stream.get();
 #ifdef DEBUG
 	std::cout << "TEST token = |" << str << "| other" << std::endl;
 #endif

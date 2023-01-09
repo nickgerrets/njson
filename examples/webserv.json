@@ -1,0 +1,101 @@
+{
+	"server": 
+	[ 
+		{
+			"server_name": "test.com",
+			"port": 78594,
+			"client_body_size": 1000,
+
+			"error_page": 
+			{
+				"500": "error.html",
+				"403": "403.html",
+				"404": "404.html"
+			},
+
+			"location":
+			[
+				{
+					"path": "/",
+					"index": "index.html",
+					"auto_index": true,
+					"root": "var/www/html",
+					"allowed_method": [ "GET" ]
+				},
+
+				{
+					"path": "test/",
+					"upload": "/images/",
+					"allowed_method": [ "GET", "POST" ],
+					"CGI": ".php/Users/ngerrets/.brew/bin/php-cgi",
+					"root": "var/www/html",
+					"auto_index": true
+				},
+
+				{
+					"path": "test/upload/",
+					"allowed_method": [ "GET", "DELETE" ],
+					"root": "var/www/html",
+					"auto_index": true
+				},
+
+				{
+					"path": "old/",
+					"return": "http://localhost:4242/Redirection/301.html",
+					"allowed_method": [ "GET" ],
+					"root": "var/www/html"
+				},
+
+				{
+					"path": "cgi_bin/",
+					"root": "var/www/html",
+					"allowed_method": [ "GET", "POST" ]
+				}
+
+			]
+		},
+		
+		{
+			"location/test/": 
+			{
+				"upload": "/images",
+				"allowed_method": [ "GET", "POST" ],
+				"CGI": ".php/Users/shoogenb/.brew/bin/php-cgi",
+				"root": "var/www/html",
+				"auto_index": true
+			},
+
+			"error_page": 
+			{
+				"500": "error.html",
+				"403": "403.html",
+				"404": "404.html"
+			},
+
+			"location/old": 
+			{
+				"return": "http://localhost:4242/Redirection/301.html",
+				"root": "var/www/html",
+				"allowed_method": [ "GET" ]
+			},
+
+			"server_name": "server2.com",
+			"listen": [ 7575, 8080 ],
+			"client_body_size": 1000,
+			"location/test/images/": 
+			{
+				"allowed_method": [ "GET", "DELETE" ],
+				"root": "var/www/html",
+				"auto_index": true
+			},
+
+			"location/": 
+			{
+				"index": "index.html",
+				"auto_index": true,
+				"root": "var/www/html",
+				"allowed_method": [ "GET" ]
+			}
+		}
+	]
+}

@@ -6,8 +6,8 @@ namespace njson {
 
 //	Value union constructors (w/ move semantics)
 Json::Value::Value() : i(0) {}
-Json::Value::Value(Array&& array) : array(std::move(array)) {}
-Json::Value::Value(Object&& object) : object(std::move(object)) {}
+Json::Value::Value(array_t&& array) : array(std::move(array)) {}
+Json::Value::Value(object_t&& object) : object(std::move(object)) {}
 Json::Value::Value(const std::string& str) : str(str) {}
 Json::Value::Value(double d) : d(d) {}
 Json::Value::Value(int i) : i(i) {}
@@ -16,9 +16,9 @@ Json::Value::Value(bool b) : boolean(b) {}
 Json::Value::~Value() {}
 
 //	Constructors using move semantics
-Json::Json(Array&& array)
+Json::Json(array_t&& array)
 : m_type(Type::ARRAY), m_value(std::move(array)) {};
-Json::Json(Object&& object)
+Json::Json(object_t&& object)
 : m_type(Type::OBJECT), m_value(std::move(object)) {};
 
 //	Json constructors
@@ -53,8 +53,8 @@ Json::~Json()
 void	Json::destroyArray()
 {
 	//	delete individual elements
-	for (auto* json : getArray())
-		delete json;
+	// for (auto* json : getArray())
+	// 	delete json;
 	//	Call destructor of vector
 	getArray().~vector();
 }
@@ -62,30 +62,30 @@ void	Json::destroyArray()
 void	Json::destroyObject()
 {
 	//	delete individual elements
-	for (auto& pair : getObject())
-		delete pair.second;
+	// for (auto& pair : getObject())
+	// 	delete pair.second;
 	//	Call destructor of map
 	getObject().~unordered_map();
 }
 
 //	to simplify adding to the map/vector
-void	Json::addToObject(const Key& key, Json* value)
+void	Json::addToObject(const key_t& key, Json::pointer_t value)
 {
 	if (getType() != Type::OBJECT)
 		return ;
-	getObject().emplace(key, value);
+	getObject().emplace(key, std::move(value));
 }
 
-void	Json::addToArray(Json* value)
+void	Json::addToArray(Json::pointer_t value)
 {
 	if (getType() != Type::ARRAY)
 		return ;
-	getArray().emplace_back(value);
+	getArray().emplace_back(std::move(value));
 }
 
 //	Not sure about this, but it is easy to use.
 //	returns an null type Json reference if key can't be found.
-Json&	Json::find(const Key& key)
+Json&	Json::find(const key_t& key)
 {
 	static Json empty{};
 

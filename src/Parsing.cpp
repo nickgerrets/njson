@@ -18,7 +18,7 @@ enum class State
 #define CHECK_COMMA true
 
 static State	getStateFromChar(char c);
-static Json*	runState(std::ifstream& file, State state);
+static Json::pointer_t	runState(std::istream& file, State state);
 
 static bool	isDelim(char c)
 {
@@ -82,13 +82,13 @@ static std::string	getNextToken(std::istream& stream)
 	return (str);
 }
 
-static Json*	stateObject(std::ifstream& file)
+static Json::pointer_t stateObject(std::istream& file)
 {
 #ifdef DEBUG
 	std::cerr << "TEST entered OBJECT" << std::endl;
 #endif
 
-	Json*	object = new Json(Json::Object{});
+	Json::pointer_t object = Json::pointer_t(new Json(Json::object_t{}));
 
 	std::string	token;
 	while (!file.eof() && (token = getNextToken(file)) != "}")
@@ -105,49 +105,43 @@ static Json*	stateObject(std::ifstream& file)
 			else if (CHECK_COMMA)
 			{
 				std::cerr << "njson: [ERROR] bad object. (no ,)" << std::endl;
-				delete object;
-				return (NULL);
+				return (Json::pointer_t(new Json()));
 			}
 		}
 		if (isDelim(token[0]))
 		{
 			std::cerr << "njson: [ERROR] bad object." << std::endl;
-			delete object;
-			return (NULL);
+			return (Json::pointer_t(new Json()));
 		}
 		key = token;
 		if (key.back() == '\"' && key.front() != '\"')
 		{
 			std::cerr << "njson: [ERROR] key not encapsulated by '\"'." << std::endl;
-			delete object;
-			return (NULL);
+			return (Json::pointer_t(new Json()));
 		}
 		trim(key);
 		token = getNextToken(file);
 		if (token[0] != ':')
 		{
 			std::cerr << "njson: [ERROR] bad object (no :)." << std::endl;
-			delete object;
-			return (NULL);
+			return (Json::pointer_t(new Json()));
 		}
 		skipWS(file);
-		object->getObject()[key] = runState(file, getStateFromChar(file.get()));
+		object->addToObject(key, runState(file, getStateFromChar(file.get())));
+		// object->getObject()[key] = );
 		if (!object->getObject()[key])
-		{
-			delete object;
-			return (NULL);
-		}
+			return (Json::pointer_t(new Json()));
 	}
 	return (object);
 }
 
-static Json*	stateArray(std::ifstream& file)
+static Json::pointer_t	stateArray(std::istream& file)
 {
 #ifdef DEBUG
 	std::cerr << "TEST entered ARRAY" << std::endl;
 #endif
 
-	Json*	array = new Json(Json::Array{});
+	Json::pointer_t	array = Json::pointer_t(new Json(Json::array_t{}));
 
 	while (!file.eof())
 	{
@@ -175,48 +169,46 @@ static Json*	stateArray(std::ifstream& file)
 			else if (CHECK_COMMA)
 			{
 				std::cerr << "njson: [ERROR] bad array. (no ,)" << std::endl;
-				delete array;
-				return (NULL);
+				return (Json::pointer_t(new Json()));
 			}
 		}
 		array->getArray().emplace_back(runState(file, getStateFromChar(file.get())));
 	}
-	delete array;
-	return (NULL);
+	return (Json::pointer_t(new Json()));
 }
 
-static Json*	stateString(std::ifstream& file)
+static Json::pointer_t	stateString(std::istream& stream)
 {
 #ifdef DEBUG
 	std::cerr << "TEST entered STRING" << std::endl;
 #endif
 
-	file.unget();
-	std::string	str = getNextToken(file);
+	stream.unget();
+	std::string	str = getNextToken(stream);
 
 	if (str.back() != '\"')
 	{
 		std::cerr << "njson: [ERROR] string not encapsulated by '\"'." << std::endl;
-		return (NULL);
+		return (Json::pointer_t(new Json()));
 	}
 	trim(str);
-	return (new Json(str));
+	return Json::pointer_t(new Json(str));
 }
 
-static Json*	stateNumber(std::ifstream& file)
+static Json::pointer_t	stateNumber(std::istream& stream)
 {
 #ifdef DEBUG
 	std::cerr << "TEST entered NUMBER" << std::endl;
 #endif
 	std::string	str;
 
-	file.unget();
-	str = getNextToken(file);
+	stream.unget();
+	str = getNextToken(stream);
 
 	if (str.empty())
 	{
 		std::cerr << "njson: [ERROR] bad number." << std::endl;
-		return (NULL);
+		return (Json::pointer_t(new Json()));
 	}
 
 	if (str.find('.'))
@@ -228,7 +220,7 @@ static Json*	stateNumber(std::ifstream& file)
 		}
 		catch (std::invalid_argument& e) { std::cerr << e.what() << std::endl; }
 		catch (std::out_of_range& e) { std::cerr << e.what() << std::endl; }
-		return (new Json(d));
+		return (Json::pointer_t(new Json(d)));
 	}
 	else
 	{
@@ -239,26 +231,26 @@ static Json*	stateNumber(std::ifstream& file)
 		}
 		catch (std::invalid_argument& e) { std::cerr << e.what() << std::endl; }
 		catch (std::out_of_range& e) { std::cerr << e.what() << std::endl; }
-		return (new Json(n));
+		return (Json::pointer_t(new Json(n)));
 	}
 }
 
-static Json*	stateWord(std::ifstream& file)
+static Json::pointer_t	stateWord(std::istream& stream)
 {
 #ifdef DEBUG
 	std::cerr << "TEST entered WORD" << std::endl;
 #endif
 
-	file.unget();
-	skipWS(file);
-	std::string word = getNextToken(file);
+	stream.unget();
+	skipWS(stream);
+	std::string word = getNextToken(stream);
 	if (word == "true")
-		return (new Json(true));
+		return (Json::pointer_t(new Json(true)));
 	if (word == "false")
-		return (new Json(false));
+		return (Json::pointer_t(new Json(false)));
 	if (word == "null")
-		return (new Json());
-	return (NULL);
+		return (Json::pointer_t(new Json()));
+	return (Json::pointer_t(new Json()));
 }
 
 static State	getStateFromChar(char c)
@@ -279,27 +271,27 @@ static State	getStateFromChar(char c)
 	return (State::WORD);
 }
 
-static Json*	runState(std::ifstream& file, State state)
+static Json::pointer_t	runState(std::istream& stream, State state)
 {
 	switch (state)
 	{
 		case State::OBJECT :
-			return (stateObject(file));
+			return (stateObject(stream));
 		case State::ARRAY :
-			return (stateArray(file));
+			return (stateArray(stream));
 		case State::STRING :
-			return (stateString(file));
+			return (stateString(stream));
 		case State::NUMBER :
-			return (stateNumber(file));
+			return (stateNumber(stream));
 		case State::WORD :
-			return (stateWord(file));
+			return (stateWord(stream));
 		default :
 			std::cerr << "njson: [ERROR] Unknown State." << std::endl;
-			return (NULL);
+			return (Json::pointer_t(new Json()));
 	}
 }
 
-Json*	parse(const char* fname)
+Json::pointer_t	parse(const char* fname)
 {
 	std::ifstream	file;
 
@@ -313,7 +305,7 @@ Json*	parse(const char* fname)
 	return runState(file, getStateFromChar(file.get()));
 }
 
-Json*	parse(const std::string& fname)
+Json::pointer_t	parse(const std::string& fname)
 {
 	return parse(fname.c_str());
 }

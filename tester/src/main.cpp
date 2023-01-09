@@ -5,18 +5,19 @@
 
 using namespace njson;
 
-int	main(void)
+int	main(int argc, char **argv)
 {
 	using namespace njson;
 
-	std::ofstream	file;
-	file.open("out.txt");
+	if (argc < 2)
+	{
+		std::cout << "usage: " << argv[0] << " <in_file>" << std::endl;
+		return (EXIT_FAILURE);
+	}
 
-	Json*	json = parse("tester/webserv.json");
+	Json::pointer_t json = parse(argv[1]);
 	if (json)
 		json->print(std::cout);
-
-	delete json;
 
 	return (0);
 }

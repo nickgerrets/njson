@@ -12,12 +12,14 @@ namespace njson {
 	you to construct and instance of the Json class with the
 	type predetermined.
 */
+
 class Json
 {
 	public:
-		using Key = std::string;
-		using Array = std::vector<Json*>;
-		using Object = std::unordered_map<Key, Json*>;
+		using key_t = std::string;
+		using pointer_t = std::unique_ptr<Json>;
+		using array_t = std::vector<pointer_t>;
+		using object_t = std::unordered_map<key_t, pointer_t>;
 
 		enum class Type
 		{
@@ -35,8 +37,8 @@ class Json
 		{
 			//	Constructors
 			Value();
-			Value(Array&& array);
-			Value(Object&& object);
+			Value(array_t&& array);
+			Value(object_t&& object);
 			Value(const std::string& str);
 			Value(double d);
 			Value(int i);
@@ -46,8 +48,8 @@ class Json
 			~Value();
 
 			//	Values
-			Array		array;
-			Object		object;
+			array_t		array;
+			object_t		object;
 			std::string	str;
 			double		d;
 			int			i;
@@ -57,8 +59,8 @@ class Json
 	public:
 		//	Constructors
 		Json();
-		Json(Array&& array);
-		Json(Object&& object);
+		Json(array_t&& array);
+		Json(object_t&& object);
 		Json(const std::string& str);
 		Json(const char* str);	//	This one is in there so you can use a string-literal
 		Json(int i);
@@ -69,23 +71,23 @@ class Json
 		~Json();
 
 		//	Getters
-		Array&				getArray() { return m_value.array; }
-		Object&				getObject() { return m_value.object; }
+		array_t&			getArray() { return m_value.array; }
+		object_t&			getObject() { return m_value.object; }
 		const std::string&	getString() const { return m_value.str; }
 		double				getDouble() const { return m_value.d; }
 		int					getInt() const { return m_value.i; }
 		bool				getBool() const { return m_value.boolean; }
 		Type				getType() const { return m_type; }
 
-		void	addToObject(const Key& key, Json* value);
-		void	addToArray(Json* value);
+		void	addToObject(const key_t& key, Json::pointer_t value);
+		void	addToArray(Json::pointer_t value);
 
-		//	Find method to get the value out of the Object map
-		Json&	find(const Key& key);
+		//	Find method to get the value out of the object map
+		Json&	find(const key_t& key);
 
-		//	Find method for chain-finding in Object maps
+		//	Find method for chain-finding in object maps
 		template<typename... Args>
-		Json&	find(const Key& first, Args... keys)
+		Json&	find(const key_t& first, Args... keys)
 		{
 			return (find(first).find(keys...));
 		}
@@ -109,7 +111,7 @@ class Json
 
 };
 
-Json*	parse(const char* fname);
-Json*	parse(const std::string& fname);
+Json::pointer_t	parse(const char* fname);
+Json::pointer_t	parse(const std::string& fname);
 
 }	//	namespace njson

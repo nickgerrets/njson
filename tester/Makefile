@@ -6,7 +6,7 @@ DEBUG ?= 1
 TARGET ?= test
 
 BUILD_DIR ?= ./build
-SRC_DIRS ?= ./src ./include
+SRC_DIRS ?= ./src ../include ./include
 INC_DIRS ?= ./include ../include
 CPPFLAGS ?= -Wall -Wextra -std=c++11
 LDFLAGS ?= -L"../" -lnjson
@@ -24,7 +24,7 @@ CPPFLAGS += $(INC_FLAGS) -MMD -MP
 all: $(TARGET)
 
 # linking
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) ../libnjson.a
 	@echo "Linking..."
 	@$(CXX) -o $(TARGET) $(OBJS) $(LDFLAGS)
 	@echo "Done!"

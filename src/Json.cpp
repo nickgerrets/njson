@@ -33,7 +33,7 @@ Json::Json(bool b) : m_type(Type::BOOL) , m_value(b) {}
 Json::~Json()
 {
 	//	Based on the type, destructor will act differently
-	switch (getType())
+	switch (get_type())
 	{
 		case Type::ARRAY:
 			destroyArray();
@@ -43,7 +43,7 @@ Json::~Json()
 			break ;
 		case Type::STRING:
 			//	Call destructor of string
-			getString().~basic_string();
+			get_value<std::string>().~basic_string();
 			break ;
 		default:
 			break ;
@@ -52,49 +52,43 @@ Json::~Json()
 
 void	Json::destroyArray()
 {
-	//	delete individual elements
-	// for (auto* json : getArray())
-	// 	delete json;
 	//	Call destructor of vector
-	getArray().~vector();
+	get_value<array_t>().~vector();
 }
 
 void	Json::destroyObject()
 {
-	//	delete individual elements
-	// for (auto& pair : getObject())
-	// 	delete pair.second;
 	//	Call destructor of map
-	getObject().~unordered_map();
+	get_value<object_t>().~unordered_map();
 }
 
 //	to simplify adding to the map/vector
 void	Json::addToObject(const key_t& key, Json::pointer_t value)
 {
-	if (getType() != Type::OBJECT)
+	if (get_type() != Type::OBJECT)
 		return ;
-	getObject().emplace(key, std::move(value));
+	get_value<object_t>().emplace(key, std::move(value));
 }
 
 void	Json::addToArray(Json::pointer_t value)
 {
-	if (getType() != Type::ARRAY)
+	if (get_type() != Type::ARRAY)
 		return ;
-	getArray().emplace_back(std::move(value));
+	get_value<array_t>().emplace_back(std::move(value));
 }
 
 //	Not sure about this, but it is easy to use.
 //	returns an null type Json reference if key can't be found.
-Json&	Json::find(const key_t& key)
+Json::pointer_t&	Json::find(const key_t& key)
 {
-	static Json empty{};
+	static Json::pointer_t empty{};
 
-	if (getType() != Type::OBJECT)
+	if (get_type() != Type::OBJECT)
 		return (empty);
-	auto it = getObject().find(key);
-	if (it == getObject().end())
+	auto it = get_value<object_t>().find(key);
+	if (it == get_value<object_t>().end())
 		return (empty);
-	return (*it->second);
+	return (it->second);
 }
 
 //	Printing
@@ -111,22 +105,22 @@ void	Json::printDepth(size_t depth, std::ostream& out) const
 
 void	Json::printImpl(size_t depth, std::ostream& out) const
 {
-	switch (getType())
+	switch (get_type())
 	{
 		case Type::DOUBLE :
-			out << std::setprecision(15) << getDouble();
+			out << std::setprecision(15) << get_value<double>();
 			break;
 		case Type::INT :
-			out << getInt();
+			out << get_value<int>();
 			break;
 		case Type::BOOL :
-			if (getBool())
+			if (get_value<bool>())
 				out << "true";
 			else
 				out << "false";
 			break;
 		case Type::STRING :
-			out << '"' << getString() << '"';
+			out << '"' << get_value<std::string>() << '"';
 			break;
 		case Type::OBJECT :
 			printObject(depth, out);
@@ -172,12 +166,12 @@ void	Json::printArray(size_t depth, std::ostream& out) const
 		m_value.array[i]->printImpl(depth + 1, out);
 		if (i < m_value.array.size() - 1)
 		{
-			if (m_value.array[i]->getType() == Type::OBJECT)
+			if (m_value.array[i]->get_type() == Type::OBJECT)
 				printDepth(depth, out);
 			out << ", ";
 		}
 	}
-	if (m_value.array[m_value.array.size() - 1]->getType() == Type::OBJECT)
+	if (m_value.array[m_value.array.size() - 1]->get_type() == Type::OBJECT)
 		printDepth(depth, out);
 	out << " ]";
 }

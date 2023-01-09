@@ -45,11 +45,13 @@ clean:
 
 fclean: clean
 	$(RM) $(TARGET)
+	$(RM) test
 
 _tester_fclean:
 	$(RM) "./test"
 
-re: clean all
+re: fclean all
+	$(MAKE) re -C "tester/"
 
 -include $(DEPS)
 

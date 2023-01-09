@@ -95,7 +95,7 @@ static Json::pointer_t stateObject(std::istream& file)
 	{
 		std::string	key;
 
-		if (object->getObject().size() > 0)
+		if (object->get_value<Json::object_t>().size() > 0)
 		{
 			if (token[0] == ',')
 			{
@@ -129,7 +129,7 @@ static Json::pointer_t stateObject(std::istream& file)
 		skipWS(file);
 		object->addToObject(key, runState(file, getStateFromChar(file.get())));
 		// object->getObject()[key] = );
-		if (!object->getObject()[key])
+		if (!object->get_value<Json::object_t>()[key])
 			return (Json::pointer_t(new Json()));
 	}
 	return (object);
@@ -155,7 +155,7 @@ static Json::pointer_t	stateArray(std::istream& file)
 #endif
 			return (array);
 		}
-		if (array->getArray().size() > 0)
+		if (array->get_value<Json::array_t>().size() > 0)
 		{
 			if (c == ',')
 			{
@@ -172,7 +172,7 @@ static Json::pointer_t	stateArray(std::istream& file)
 				return (Json::pointer_t(new Json()));
 			}
 		}
-		array->getArray().emplace_back(runState(file, getStateFromChar(file.get())));
+		array->get_value<Json::array_t>().emplace_back(runState(file, getStateFromChar(file.get())));
 	}
 	return (Json::pointer_t(new Json()));
 }

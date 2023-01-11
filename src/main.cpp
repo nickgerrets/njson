@@ -8,17 +8,8 @@
 
 using namespace njson;
 
-int	main(int argc, char **argv)
+int on_no_arg(void)
 {
-
-	// if (argc < 2)
-	// {
-	// 	std::cout << "usage: " << argv[0] << " <in_file>" << std::endl;
-	// 	return (EXIT_FAILURE);
-	// }
-
-	(void)argc; (void)argv;
-
 	P("-- parsing...");
 	Json::pointer json = parse("json/test.json");
 	NL;
@@ -60,5 +51,19 @@ int	main(int argc, char **argv)
 	std::cout << std::boolalpha << json->is<Json::array>() << std::endl;
 	NL;
 
-	return (0);
+	return (EXIT_SUCCESS);
+}
+
+int	main(int argc, char **argv)
+{
+	if (argc < 2)
+		return on_no_arg();
+
+	Json::pointer json = parse(argv[1]);
+	if (!(*json))
+		return (EXIT_FAILURE);
+
+	std::cout << json << std::endl;
+	
+	return (EXIT_SUCCESS);
 }

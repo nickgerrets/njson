@@ -34,6 +34,8 @@ for (Json::pointer const& n : server_nodes)
 	...
 ```
 
+
+
 ## Json Node
 
 A json node hold a value and the type of it's value.

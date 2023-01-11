@@ -4,6 +4,8 @@
 
 namespace njson {
 
+std::string Json::indentation_string = "\t";
+
 //	Value union constructors (w/ move semantics)
 Json::Value::Value() : i(0) {}
 Json::Value::Value(Json::array&& array) : array(std::move(array)) {}
@@ -106,19 +108,19 @@ Json::pointer& Json::find(const key& key)
 }
 
 //	Printing
-void	Json::print(std::ostream& out) const
+void	Json::print(std::ostream& out, bool pretty) const
 {
-	print_impl(0, out);
+	print_impl(0, out, pretty);
 	out << std::endl;
 }
 
 void	Json::print_depth(size_t depth, std::ostream& out) const
 {
 	while (depth-- > 0)
-		out << "  ";
+		out << indentation_string;
 }
 
-void	Json::print_impl(size_t depth, std::ostream& out) const
+void	Json::print_impl(size_t depth, std::ostream& out, bool pretty) const
 {
 	switch (get_type())
 	{
@@ -138,10 +140,10 @@ void	Json::print_impl(size_t depth, std::ostream& out) const
 			out << '"' << get<std::string>() << '"';
 			break;
 		case Type::OBJECT :
-			print_object(depth, out);
+			print_object(depth, out, pretty);
 			break;
 		case Type::ARRAY :
-			print_array(depth, out);
+			print_array(depth, out, pretty);
 			break;
 		case Type::NULL_T :
 			out << "null";
@@ -151,44 +153,55 @@ void	Json::print_impl(size_t depth, std::ostream& out) const
 	}
 }
 
-void	Json::print_object(size_t depth, std::ostream& out) const
+void	Json::print_object(size_t depth, std::ostream& out, bool pretty) const
 {
-	out << "\n";
-	print_depth(depth, out);
 	out << '{';
 	if (m_value.object.size() == 0)
 	{
-		out << '}' << std::endl;
+		out << '}';
 		return ;
 	}
-	out << std::endl;
-	for (const auto& pair : m_value.object)
+	if (pretty) out << '\n';
+	for (auto it = m_value.object.begin(); it != m_value.object.end();)
 	{
-		print_depth(depth + 1, out);
+		auto const& pair = *it;
+		if (pretty)
+			print_depth(depth + 1, out);
 		out << '"' << pair.first << "\": ";
-		pair.second->print_impl(depth + 1, out);
-		out << std::endl;
+		pair.second->print_impl(depth + 1, out, pretty);
+		++it;
+		if (it != m_value.object.end())
+			out << ',';
+		if (pretty) out << '\n'; else out << ' ';
 	}
-	print_depth(depth, out);
-	out << '}' << std::endl;
+	if (pretty) print_depth(depth, out);
+	out << '}';
 }
 
-void	Json::print_array(size_t depth, std::ostream& out) const
+void	Json::print_array(size_t depth, std::ostream& out, bool pretty) const
 {
-	out << "[ ";
-	for (size_t i = 0; i < m_value.array.size(); i++)
+	out << "[";
+	for (size_t i = 0; i < m_value.array.size(); ++i)
 	{
-		m_value.array[i]->print_impl(depth + 1, out);
+		// if (pretty && m_value.array[i]->get_type() == Type::OBJECT)
+		// 	print_depth(depth, out, pretty);
+		if (pretty)
+		{
+			out << '\n';
+			print_depth(depth + 1, out);
+		}
+		m_value.array[i]->print_impl(depth + 1, out, pretty);
 		if (i < m_value.array.size() - 1)
 		{
-			if (m_value.array[i]->get_type() == Type::OBJECT)
-				print_depth(depth, out);
 			out << ", ";
 		}
 	}
-	if (m_value.array[m_value.array.size() - 1]->get_type() == Type::OBJECT)
+	if (pretty)
+	{
+		out << '\n';
 		print_depth(depth, out);
-	out << " ]";
+	}
+	out << "]";
 }
 
 }	//	namespace njson

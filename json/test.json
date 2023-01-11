@@ -1,6 +1,6 @@
 {
 	"_": "This is the string attached to the '_' key.",
-	"key" : [ "hello"  , {} ],
+	"key" : [ "hello"  , {}, { "another_key": "value" }, 88],
 	"object" : 
 	{
 		"banana" : "bananas more bananas",

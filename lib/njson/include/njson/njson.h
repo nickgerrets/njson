@@ -14,6 +14,14 @@ namespace njson {
 */
 class Json
 {
+// ======================== INDENTATION ======================== //
+	private:
+		// the string used as a level of indentation (default: "\t")
+		static std::string indentation_string;
+
+	public:
+		static void set_indentation_string(std::string const& str) { indentation_string = str; }
+		static std::string const& get_indentation_string(void) { return indentation_string; }
 // =========================== TYPES =========================== //
 	public:
 		// key type, it's always going to be a string
@@ -133,6 +141,8 @@ class Json
 			}
 		}
 
+		std::string const get_type_string(void) { return get_type_string(this->get_type()); }
+
 		// these functions can be used to add key-value pairs to a Json object
 		void add_to_object(const key& key, Json* json);
 		void add_to_object(const key& key, Json::pointer json);
@@ -154,13 +164,26 @@ class Json
 			return (find(first)->find(keys...));
 		}
 
-		//	print the entire json-tree from this node
-		void print(std::ostream& out = std::cout) const;
+		//	print the entire json-tree from this node (pretty = true also puts indentation and newlines)
+		void print(std::ostream& out = std::cout, bool pretty = true) const;
 
 // =================== OPERATOR OVERLOADS ====================== //
 	public:
 		// returns true if the type isn't a null-type (so if there's data to get or not)
 		operator bool() const { return m_type != Type::NULL_T; }
+
+		// just calls print on the stream (only difference is that print() actually flushes)
+		friend std::ostream& operator<<(std::ostream& stream, Json const& rhs)
+		{
+			rhs.print_impl(0, stream, true);
+			return (stream);
+		}
+
+		friend std::ostream& operator<<(std::ostream& stream, Json::pointer const& rhs)
+		{
+			rhs->print_impl(0, stream, true);
+			return (stream);
+		}
 
 // ===================== PRIVATE HELPERS ======================= //
 	private:
@@ -179,10 +202,10 @@ class Json
 		void	destroy_object();
 
 		//	Printing
-		void	print_impl(size_t depth, std::ostream& out) const;
+		void	print_impl(size_t depth, std::ostream& out, bool pretty) const;
+		void	print_object(size_t depth, std::ostream& out, bool pretty) const;
+		void	print_array(size_t depth, std::ostream& out, bool pretty) const;
 		void	print_depth(size_t depth, std::ostream& out) const;
-		void	print_object(size_t depth, std::ostream& out) const;
-		void	print_array(size_t depth, std::ostream& out) const;
 
 // ======================== EXCEPTIONS ========================= //
 	public:

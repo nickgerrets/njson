@@ -1,4 +1,4 @@
-#include "Json.h"
+#include "njson/njson.h"
 
 #include <iomanip>
 
@@ -6,9 +6,9 @@ namespace njson {
 
 //	Value union constructors (w/ move semantics)
 Json::Value::Value() : i(0) {}
-Json::Value::Value(array_t&& array) : array(std::move(array)) {}
-Json::Value::Value(object_t&& object) : object(std::move(object)) {}
-Json::Value::Value(const std::string& str) : str(str) {}
+Json::Value::Value(Json::array&& array) : array(std::move(array)) {}
+Json::Value::Value(Json::object&& object) : object(std::move(object)) {}
+Json::Value::Value(Json::string const& str) : str(str) {}
 Json::Value::Value(double d) : d(d) {}
 Json::Value::Value(int i) : i(i) {}
 Json::Value::Value(bool b) : boolean(b) {}
@@ -16,15 +16,15 @@ Json::Value::Value(bool b) : boolean(b) {}
 Json::Value::~Value() {}
 
 //	Constructors using move semantics
-Json::Json(array_t&& array)
+Json::Json(array&& array)
 : m_type(Type::ARRAY), m_value(std::move(array)) {};
-Json::Json(object_t&& object)
+Json::Json(object&& object)
 : m_type(Type::OBJECT), m_value(std::move(object)) {};
 
 //	Json constructors
 Json::Json() : m_type(Type::NULL_T) {}
-Json::Json(const std::string& str) : m_type(Type::STRING), m_value(str) {}
-Json::Json(const char* str) : m_type(Type::STRING), m_value(std::string{str}) {}
+Json::Json(string const& str) : m_type(Type::STRING), m_value(str) {}
+Json::Json(const char* str) : m_type(Type::STRING), m_value(string{str}) {}
 Json::Json(double d) : m_type(Type::DOUBLE) , m_value(d) {}
 Json::Json(int i) : m_type(Type::INT) , m_value(i) {}
 Json::Json(bool b) : m_type(Type::BOOL) , m_value(b) {}
@@ -36,97 +36,112 @@ Json::~Json()
 	switch (get_type())
 	{
 		case Type::ARRAY:
-			destroyArray();
+			destroy_array();
 			break ;
 		case Type::OBJECT:
-			destroyObject();
+			destroy_object();
 			break ;
 		case Type::STRING:
 			//	Call destructor of string
-			get_value<std::string>().~basic_string();
+			get<std::string>().~basic_string();
 			break ;
 		default:
 			break ;
 	}
 }
 
-void	Json::destroyArray()
+void	Json::destroy_array()
 {
 	//	Call destructor of vector
-	get_value<array_t>().~vector();
+	get<array>().~vector();
 }
 
-void	Json::destroyObject()
+void	Json::destroy_object()
 {
 	//	Call destructor of map
-	get_value<object_t>().~unordered_map();
+	get<object>().~unordered_map();
 }
 
 //	to simplify adding to the map/vector
-void	Json::addToObject(const key_t& key, Json::pointer_t value)
+void	Json::add_to_object(const key& key, Json* json)
 {
 	if (get_type() != Type::OBJECT)
 		return ;
-	get_value<object_t>().emplace(key, std::move(value));
+	get<object>().emplace(key, pointer {json});
 }
 
-void	Json::addToArray(Json::pointer_t value)
+void	Json::add_to_object(const key& key, Json::pointer json)
+{
+	if (get_type() != Type::OBJECT)
+		return ;
+	get<object>().emplace(key, std::move(json));
+}
+
+void	Json::add_to_array(Json* json)
 {
 	if (get_type() != Type::ARRAY)
 		return ;
-	get_value<array_t>().emplace_back(std::move(value));
+	get<array>().emplace_back(pointer {json});
+}
+
+void	Json::add_to_array(Json::pointer json)
+{
+	if (get_type() != Type::ARRAY)
+		return ;
+	get<array>().emplace_back(std::move(json));
 }
 
 //	Not sure about this, but it is easy to use.
 //	returns an null type Json reference if key can't be found.
-Json::pointer_t&	Json::find(const key_t& key)
+Json::pointer& Json::find(const key& key)
 {
-	static Json::pointer_t empty{};
+	static Json::pointer empty_p { new Json() };
 
 	if (get_type() != Type::OBJECT)
-		return (empty);
-	auto it = get_value<object_t>().find(key);
-	if (it == get_value<object_t>().end())
-		return (empty);
+		return (empty_p);
+	auto it = get<object>().find(key);
+	if (it == get<object>().end())
+		return (empty_p);
 	return (it->second);
 }
 
 //	Printing
 void	Json::print(std::ostream& out) const
 {
-	printImpl(0, out);
+	print_impl(0, out);
+	out << std::endl;
 }
 
-void	Json::printDepth(size_t depth, std::ostream& out) const
+void	Json::print_depth(size_t depth, std::ostream& out) const
 {
 	while (depth-- > 0)
 		out << "  ";
 }
 
-void	Json::printImpl(size_t depth, std::ostream& out) const
+void	Json::print_impl(size_t depth, std::ostream& out) const
 {
 	switch (get_type())
 	{
 		case Type::DOUBLE :
-			out << std::setprecision(15) << get_value<double>();
+			out << std::setprecision(15) << get<double>();
 			break;
 		case Type::INT :
-			out << get_value<int>();
+			out << get<int>();
 			break;
 		case Type::BOOL :
-			if (get_value<bool>())
+			if (get<bool>())
 				out << "true";
 			else
 				out << "false";
 			break;
 		case Type::STRING :
-			out << '"' << get_value<std::string>() << '"';
+			out << '"' << get<std::string>() << '"';
 			break;
 		case Type::OBJECT :
-			printObject(depth, out);
+			print_object(depth, out);
 			break;
 		case Type::ARRAY :
-			printArray(depth, out);
+			print_array(depth, out);
 			break;
 		case Type::NULL_T :
 			out << "null";
@@ -136,10 +151,10 @@ void	Json::printImpl(size_t depth, std::ostream& out) const
 	}
 }
 
-void	Json::printObject(size_t depth, std::ostream& out) const
+void	Json::print_object(size_t depth, std::ostream& out) const
 {
 	out << "\n";
-	printDepth(depth, out);
+	print_depth(depth, out);
 	out << '{';
 	if (m_value.object.size() == 0)
 	{
@@ -149,30 +164,30 @@ void	Json::printObject(size_t depth, std::ostream& out) const
 	out << std::endl;
 	for (const auto& pair : m_value.object)
 	{
-		printDepth(depth + 1, out);
+		print_depth(depth + 1, out);
 		out << '"' << pair.first << "\": ";
-		pair.second->printImpl(depth + 1, out);
+		pair.second->print_impl(depth + 1, out);
 		out << std::endl;
 	}
-	printDepth(depth, out);
+	print_depth(depth, out);
 	out << '}' << std::endl;
 }
 
-void	Json::printArray(size_t depth, std::ostream& out) const
+void	Json::print_array(size_t depth, std::ostream& out) const
 {
 	out << "[ ";
 	for (size_t i = 0; i < m_value.array.size(); i++)
 	{
-		m_value.array[i]->printImpl(depth + 1, out);
+		m_value.array[i]->print_impl(depth + 1, out);
 		if (i < m_value.array.size() - 1)
 		{
 			if (m_value.array[i]->get_type() == Type::OBJECT)
-				printDepth(depth, out);
+				print_depth(depth, out);
 			out << ", ";
 		}
 	}
 	if (m_value.array[m_value.array.size() - 1]->get_type() == Type::OBJECT)
-		printDepth(depth, out);
+		print_depth(depth, out);
 	out << " ]";
 }
 

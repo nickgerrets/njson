@@ -3,56 +3,56 @@ DEBUG ?= 1
 
 # -------------------      TARGET       -------------------
 
-TARGET ?= libnjson.a
+TARGET ?= test
 
 BUILD_DIR ?= ./build
-SRC_DIRS ?= ./src ./include
-INC_DIRS ?= ./include
+SRC_DIRS ?= ./src
+INC_DIRS ?=
 CPPFLAGS ?= -Wall -Wextra -std=c++11
 LDFLAGS ?=
 
+# -------------------        LIB        -------------------
+
+LIB_TARGET := libnjson.a
+LIB_DIR := ./lib/njson
+LDFLAGS += -L"./lib/njson" -lnjson
+INC_DIRS += $(LIB_DIR)/include
+
 # --------------------------- END -------------------------
 
+LIB := $(LIB_DIR)/$(LIB_TARGET)
 SRCS := $(shell find $(SRC_DIRS) -name *.cpp)
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
-DEPS := $(OBJS_LIB:.o=.d)
 
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CPPFLAGS += $(INC_FLAGS) -MMD -MP
 
-.PHONY: all _tester
-all: $(TARGET) _tester
+.PHONY: all lib
+all: lib $(TARGET)
 
-_tester:
-	$(MAKE) -C "tester/"
-	@mv "tester/test" "./"
+lib:
+	$(MAKE) -C $(LIB_DIR)
 
 # linking
 $(TARGET): $(OBJS)
 	@echo "Linking..."
-	@ar -rv $(TARGET) $(OBJS) $(LDFLAGS)
+	@$(CXX) -o $(TARGET) $(OBJS) $(LDFLAGS)
 	@echo "Done!"
 
 # compiling
-$(BUILD_DIR)/%.cpp.o: %.cpp
+$(BUILD_DIR)/%.cpp.o: %.cpp $(LIB)
 	@$(MKDIR_P) $(dir $@)
 	@echo "Compiling: " $<
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-.PHONY: clean fclean _tester_fclean re
+.PHONY: clean fclean re
 clean:
 	$(RM) -r $(BUILD_DIR)
 
 fclean: clean
 	$(RM) $(TARGET)
-	$(RM) test
+	$(MAKE) fclean -C $(LIB_DIR)
 
-_tester_fclean:
-	$(RM) "./test"
-
-re: fclean all
-	$(MAKE) re -C "tester/"
-
--include $(DEPS)
+re: clean all
 
 MKDIR_P ?= mkdir -p

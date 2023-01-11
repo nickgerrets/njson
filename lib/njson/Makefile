@@ -3,34 +3,34 @@ DEBUG ?= 1
 
 # -------------------      TARGET       -------------------
 
-TARGET ?= test
+TARGET ?= libnjson.a
 
 BUILD_DIR ?= ./build
-SRC_DIRS ?= ./src ../include ./include
-INC_DIRS ?= ./include ../include
+SRC_DIRS ?= ./src
+INC_DIRS ?= ./include
 CPPFLAGS ?= -Wall -Wextra -std=c++11
-LDFLAGS ?= -L"../" -lnjson
+LDFLAGS ?=
 
 # --------------------------- END -------------------------
 
 SRCS := $(shell find $(SRC_DIRS) -name *.cpp)
+HDRS := $(shell find $(INC_DIRS) -name *.h)
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
-DEPS := $(OBJS_LIB:.o=.d)
 
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
-CPPFLAGS += $(INC_FLAGS) -MMD -MP
+CPPFLAGS += $(INC_FLAGS)
 
 .PHONY: all
 all: $(TARGET)
 
 # linking
-$(TARGET): $(OBJS) ../libnjson.a
+$(TARGET): $(OBJS)
 	@echo "Linking..."
-	@$(CXX) -o $(TARGET) $(OBJS) $(LDFLAGS)
+	@ar -rv $(TARGET) $(OBJS) $(LDFLAGS)
 	@echo "Done!"
 
 # compiling
-$(BUILD_DIR)/%.cpp.o: %.cpp
+$(BUILD_DIR)/%.cpp.o: %.cpp $(HDRS)
 	@$(MKDIR_P) $(dir $@)
 	@echo "Compiling: " $<
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
@@ -42,8 +42,6 @@ clean:
 fclean: clean
 	$(RM) $(TARGET)
 
-re: clean all
-
--include $(DEPS)
+re: fclean all
 
 MKDIR_P ?= mkdir -p

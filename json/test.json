@@ -1,9 +1,12 @@
 {
+	"_": "This is the string attached to the '_' key.",
 	"key" : [ "hello"  , {} ],
-	"key with multiple words" : 
+	"object" : 
 	{
 		"banana" : "bananas more bananas",
-		"more_object" : {},
+		"object+" : {
+			"string" : "hello there!"
+		},
 		"bool" : false,
 		"bool2" : true,
 		"null" : null

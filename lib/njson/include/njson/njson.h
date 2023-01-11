@@ -12,15 +12,17 @@ namespace njson {
 	you to construct and instance of the Json class with the
 	type predetermined.
 */
-
 class Json
 {
 // =========================== TYPES =========================== //
 	public:
+		// key type, it's always going to be a string
 		using key =			std::string;
+
+		// pointer type, in this unique pointers are used. This is the return type of many functions
 		using pointer =		std::unique_ptr<Json>;
 
-		// json types
+		// JSON types that can for example be used as template arguments in the public functions
 		using array =		std::vector<pointer>;
 		using object =		std::unordered_map<key, pointer>;
 		using string =		std::string;
@@ -29,19 +31,21 @@ class Json
 
 // =========================== ENUM  =========================== //
 	public:
+		// JSON types as enum
 		enum Type
-		{
-			NULL_T,
-			ARRAY,
-			OBJECT,
-			STRING,
-			DOUBLE,
-			INT,
-			BOOL
+		{				// examples:
+			NULL_T,		// "key": null
+			ARRAY,		// "key": [1, 2, 3]
+			OBJECT,		// "key": { "a": 1, "b": 2, "c": 3}
+			STRING,		// "key": "hello there"
+			DOUBLE,		// "key": 123.456
+			INT,		// "key": 123
+			BOOL		// "key": false
 		};
 
 // =========================== UNION =========================== //
 	private:
+		// The value union is how the Json class handles it's internal data
 		union Value
 		{
 			//	Constructors
@@ -67,8 +71,8 @@ class Json
 
 // ======================== CONSTRUCTOR ======================== //
 	public:
-		//	Constructors
-		Json();
+		// Constructors
+		Json(); // basically a null-type json object
 		Json(array&& array);
 		Json(object&& object);
 		Json(const std::string& str);
@@ -77,13 +81,14 @@ class Json
 		Json(double d);
 		Json(bool b);
 
-		//	Destructor
+		// Destructor
 		~Json();
 
 // ========================== GETTERS ========================== //
 	public:
-		// returns the value of this json node as the type of the template argument
+		// returns a reference to the value of this json node as the type of the template argument
 		// if type is incorrect or unsupported, the functions THROWs
+		// if you don't want an exception, you can first check the type with: is<T>() or with get_type()
 		template<typename T> T& get(void) 				{ throw_except("unsupported type"); }
 		template<> array& get<array>(void)				{ check_type<array>(); return m_value.array; }
 		template<> object& get<object>(void)			{ check_type<object>(); return m_value.object; }
@@ -92,7 +97,7 @@ class Json
 		template<> int& get<int>(void)					{ check_type<int>(); return m_value.i; }
 		template<> bool& get<bool>(void)				{ check_type<bool>(); return m_value.boolean; }
 
-		//	CONST
+		// CONST variant of get<T>() method
 		template<typename T> T const& get(void) const 				{ throw_except("unsupported type"); }
 		template<> array const& get<array>(void) const				{ check_type<array>(); return m_value.array; }
 		template<> object const& get<object>(void) const			{ check_type<object>(); return m_value.object; }
@@ -110,6 +115,7 @@ class Json
 		template<> bool is<int>(void) const			{ return (m_type == Type::INT); }
 		template<> bool is<bool>(void) const		{ return (m_type == Type::BOOL); }
 
+		// returns the enum-type of this Json node
 		Type get_type() const { return m_type; }
 
 		static std::string const get_type_string(Type type)
@@ -127,17 +133,21 @@ class Json
 			}
 		}
 
+		// these functions can be used to add key-value pairs to a Json object
 		void add_to_object(const key& key, Json* json);
 		void add_to_object(const key& key, Json::pointer json);
+
+		// these functions can be used to add values to a Json array
 		void add_to_array(Json* json);
 		void add_to_array(Json::pointer json);
 
 // ============================ FIND =========================== //
 	public:
-		//	Find method to get the value out of an object
+		// find() method to get the value out of an object based on provided key
+		// if the key isn't found, it returns a null-type json node
 		pointer& find(key const& key);
 
-		//	Find method for chain-finding in nester objects
+		//	Find method for chain-finding in nested objects
 		template<typename... Args>
 		pointer& find(key const& first, Args... keys)
 		{
@@ -149,6 +159,7 @@ class Json
 
 // =================== OPERATOR OVERLOADS ====================== //
 	public:
+		// returns true if the type isn't a null-type (so if there's data to get or not)
 		operator bool() const { return m_type != Type::NULL_T; }
 
 // ===================== PRIVATE HELPERS ======================= //
@@ -175,6 +186,7 @@ class Json
 
 // ======================== EXCEPTIONS ========================= //
 	public:
+		// this exception can get thrown by improper getting of json values (types don't match).
 		class json_exception : public std::runtime_error
 		{
 			public:

@@ -22,6 +22,7 @@ class Json
 	public:
 		static void set_indentation_string(std::string const& str) { indentation_string = str; }
 		static std::string const& get_indentation_string(void) { return indentation_string; }
+
 // =========================== TYPES =========================== //
 	public:
 		// key type, it's always going to be a string

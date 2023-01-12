@@ -291,23 +291,15 @@ static Json::pointer	runState(std::istream& stream, State state)
 	}
 }
 
-Json::pointer	parse(const char* fname)
+Json::pointer	JsonParser::parse(void)
 {
-	std::ifstream	file;
-
-	file.open(fname);
-	if (file.bad() || file.fail())
+	if (!stream)
 	{
 		std::cerr << "njson: [ERROR] Bad file." << std::endl;
 		return (NULL);
 	}
-	skipWS(file);
-	return runState(file, getStateFromChar(file.get()));
+	skipWS(stream);
+	return runState(stream, getStateFromChar(stream.get()));
 }
 
-Json::pointer	parse(const std::string& fname)
-{
-	return parse(fname.c_str());
-}
-
-}
+} // namespace njson

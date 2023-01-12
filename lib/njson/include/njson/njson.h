@@ -90,6 +90,9 @@ class Json
 		Json(double d);
 		Json(bool b);
 
+		Json(Json const& other) = delete; // delete copy constuctor
+		Json& operator=(Json const& other) = delete; // delete copy-assignment
+
 		// Destructor
 		~Json();
 
@@ -227,7 +230,34 @@ class Json
 
 };
 
-Json::pointer parse(const char* fname);
-Json::pointer parse(const std::string& fname);
+/*
+
+
+
+*/
+class JsonParser
+{
+	// ======================== CONSTRUCTOR ======================== //
+	public:
+		JsonParser() : holder(std::ifstream()), stream(holder) {}
+		JsonParser(std::string const& path) : holder(std::ifstream(path)), stream(holder) {}
+		JsonParser(char const* path) : JsonParser(std::string {path}) {}
+		JsonParser(std::istream& stream) : stream(stream) {}
+
+		JsonParser(JsonParser const& other) = delete;
+		JsonParser& operator=(JsonParser const& other) = delete;
+
+		~JsonParser() {}
+
+		bool good() const { return true; }
+
+		Json::pointer parse(void);
+
+	private:
+		std::ifstream holder;
+		std::istream& stream;
+		bool error;
+		std::string errmsg;
+};
 
 }	//	namespace njson

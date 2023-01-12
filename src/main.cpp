@@ -59,9 +59,13 @@ int	main(int argc, char **argv)
 	if (argc < 2)
 		return on_no_arg();
 
-	Json::pointer json = parse(argv[1]);
-	if (!(*json))
+	JsonParser json_file(argv[1]);
+	Json::pointer json = json_file.parse();
+	if (!json_file.good() || !json)
+	{
+		std::cout << "null-node" << std::endl;
 		return (EXIT_FAILURE);
+	}
 
 	std::cout << json << std::endl;
 	

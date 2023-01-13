@@ -102,7 +102,7 @@ class Json
 		// returns a reference to the value of this json node as the type of the template argument
 		// if type is incorrect or unsupported, the functions THROWs
 		// if you don't want an exception, you can first check the type with: is<T>() or with get_type()
-		template<typename T> T& get(void) 				{ throw_except("unsupported type"); }
+		template<typename T> T& get(void) 				{ throw(json_exception("unsupported type")); }
 		template<> array& get<array>(void)				{ check_type<array>(); return m_value.array; }
 		template<> object& get<object>(void)			{ check_type<object>(); return m_value.object; }
 		template<> std::string& get<std::string>(void)	{ check_type<std::string>(); return m_value.str; }
@@ -111,7 +111,7 @@ class Json
 		template<> bool& get<bool>(void)				{ check_type<bool>(); return m_value.boolean; }
 
 		// CONST variant of get<T>() method
-		template<typename T> T const& get(void) const 				{ throw_except("unsupported type"); }
+		template<typename T> T const& get(void) const 				{ throw(json_exception("unsupported type")); }
 		template<> array const& get<array>(void) const				{ check_type<array>(); return m_value.array; }
 		template<> object const& get<object>(void) const			{ check_type<object>(); return m_value.object; }
 		template<> std::string const& get<std::string>(void) const	{ check_type<std::string>(); return m_value.str; }
@@ -194,12 +194,12 @@ class Json
 	private:
 		// Check type THROWs when the type of the node doesn't match the template arg type
 		template<typename T> void check_type(void) const	{ }
-		template<> void check_type<array>(void) const		{ if (m_type != Type::ARRAY)	throw_except("incorrect type"); }
-		template<> void check_type<object>(void) const		{ if (m_type != Type::OBJECT)	throw_except("incorrect type"); }
-		template<> void check_type<std::string>(void) const	{ if (m_type != Type::STRING)	throw_except("incorrect type"); }
-		template<> void check_type<double>(void) const		{ if (m_type != Type::DOUBLE)	throw_except("incorrect type"); }
-		template<> void check_type<int>(void) const			{ if (m_type != Type::INT)		throw_except("incorrect type"); }
-		template<> void check_type<bool>(void) const		{ if (m_type != Type::BOOL)		throw_except("incorrect type"); }
+		template<> void check_type<array>(void) const		{ if (m_type != Type::ARRAY)	build_except(Type::ARRAY); }
+		template<> void check_type<object>(void) const		{ if (m_type != Type::OBJECT)	build_except(Type::OBJECT); }
+		template<> void check_type<std::string>(void) const	{ if (m_type != Type::STRING)	build_except(Type::STRING); }
+		template<> void check_type<double>(void) const		{ if (m_type != Type::DOUBLE)	build_except(Type::DOUBLE); }
+		template<> void check_type<int>(void) const			{ if (m_type != Type::INT)		build_except(Type::INT); }
+		template<> void check_type<bool>(void) const		{ if (m_type != Type::BOOL)		build_except(Type::BOOL); }
 		// template<> void check_type<std::nullptr_t>(void) const { return (m_type == Type::NULL_T); }
 
 		//	Destruction of array and object types
@@ -222,7 +222,13 @@ class Json
 		};
 	
 	private:
-		void throw_except(std::string const& str) const { throw(json_exception(str + ": " + get_type_string(m_type))); }
+		void build_except(Type given) const
+		{
+			throw(json_exception("incorrect type. Expected: "
+				+ get_type_string(m_type)
+				+ ", given: "
+				+ get_type_string(given)));
+		}
 
 // ======================== MEMBER VARS ======================== //
 	private:

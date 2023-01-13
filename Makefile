@@ -8,7 +8,7 @@ TARGET ?= test
 BUILD_DIR ?= ./build
 SRC_DIRS ?= ./src
 INC_DIRS ?=
-CPPFLAGS ?= -Wall -Wextra -std=c++11
+CPPFLAGS ?= -Wall -Wextra -std=c++11 -Ofast
 LDFLAGS ?=
 
 # -------------------        LIB        -------------------
@@ -53,6 +53,6 @@ fclean: clean
 	$(RM) $(TARGET)
 	$(MAKE) fclean -C $(LIB_DIR)
 
-re: clean all
+re: fclean all
 
 MKDIR_P ?= mkdir -p

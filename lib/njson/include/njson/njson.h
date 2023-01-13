@@ -255,7 +255,9 @@ class JsonParser
 		JsonParser& operator=(JsonParser const& other) = delete;
 
 		~JsonParser() {}
-
+	
+	// ========================== METHODS ========================== //
+	public:
 		void open(std::string const& path);
 		void close(void);
 
@@ -266,13 +268,14 @@ class JsonParser
 
 		Json::pointer parse(void);
 
+	// ========================== MEMBERS ========================== //
 	private:
 		std::ifstream holder;
 		std::istream& stream;
 		bool error;
 		std::string errmsg;
 	
-	// Parsing states
+	// ========================== PARSING ========================== //
 	private:
 		enum State
 		{
@@ -284,14 +287,9 @@ class JsonParser
 			WORD
 		};
 
-	// Parsing methods
-	private:
-
 		Json::pointer set_error(std::string const& str);
-
 		State get_state_from_c(char c);
 		Json::pointer run_state(State state);
-
 		Json::pointer state_object(void);
 		Json::pointer state_array(void);
 		Json::pointer state_string(void);

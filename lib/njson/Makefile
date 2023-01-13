@@ -8,7 +8,7 @@ TARGET ?= libnjson.a
 BUILD_DIR ?= ./build
 SRC_DIRS ?= ./src
 INC_DIRS ?= ./include
-CPPFLAGS ?= -Wall -Wextra -std=c++11
+CPPFLAGS ?= -Wall -Wextra -std=c++11 -Ofast
 LDFLAGS ?=
 
 # --------------------------- END -------------------------

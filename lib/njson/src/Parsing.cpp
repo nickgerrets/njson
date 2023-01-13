@@ -17,8 +17,8 @@ enum class State
 
 #define CHECK_COMMA true
 
-static State getStateFromChar(char c);
-static Json::pointer runState(std::istream& file, State state);
+static State get_state_from_c(char c);
+static Json::pointer run_state(std::istream& file, State state);
 
 static bool	isDelim(char c)
 {
@@ -127,7 +127,7 @@ static Json::pointer stateObject(std::istream& file)
 			return (Json::pointer(new Json()));
 		}
 		skipWS(file);
-		object->add_to_object(key, runState(file, getStateFromChar(file.get())));
+		object->add_to_object(key, run_state(file, get_state_from_c(file.get())));
 		// object->getObject()[key] = );
 		if (!object->get<Json::object>()[key])
 			return (Json::pointer(new Json()));
@@ -172,7 +172,7 @@ static Json::pointer	stateArray(std::istream& file)
 				return (Json::pointer(new Json()));
 			}
 		}
-		array->get<Json::array>().emplace_back(runState(file, getStateFromChar(file.get())));
+		array->get<Json::array>().emplace_back(run_state(file, get_state_from_c(file.get())));
 	}
 	return (Json::pointer(new Json()));
 }
@@ -253,7 +253,7 @@ static Json::pointer	stateWord(std::istream& stream)
 	return (Json::pointer(new Json()));
 }
 
-static State	getStateFromChar(char c)
+static State	get_state_from_c(char c)
 {
 	switch (c)
 	{
@@ -271,7 +271,7 @@ static State	getStateFromChar(char c)
 	return (State::WORD);
 }
 
-static Json::pointer	runState(std::istream& stream, State state)
+static Json::pointer	run_state(std::istream& stream, State state)
 {
 	switch (state)
 	{
@@ -291,15 +291,49 @@ static Json::pointer	runState(std::istream& stream, State state)
 	}
 }
 
+// CONSTRUCTORS
+JsonParser::JsonParser() : holder(std::ifstream()), stream(holder), error(false), errmsg("") {}
+
+JsonParser::JsonParser(std::string const& path) : holder(std::ifstream(path)), stream(holder), error(false), errmsg("")
+{
+	if (!stream)
+	{
+		error = true;
+		errmsg = "bad input stream";
+	}
+}
+
+JsonParser::JsonParser(char const* path) : JsonParser(std::string {path}) {}
+
+JsonParser::JsonParser(std::istream& stream) : stream(stream), error(false), errmsg("")
+{
+	if (!stream)
+	{
+		error = true;
+		errmsg = "bad input stream";
+	}
+}
+
 Json::pointer	JsonParser::parse(void)
 {
 	if (!stream)
 	{
-		std::cerr << "njson: [ERROR] Bad file." << std::endl;
-		return (NULL);
+		error = true;
+		errmsg = "bad input stream";
+		return Json::pointer(new Json());
 	}
-	skipWS(stream);
-	return runState(stream, getStateFromChar(stream.get()));
+	stream >> std::ws;
+	return run_state(stream, get_state_from_c(stream.get()));
+}
+
+void JsonParser::open(std::string const& path)
+{
+	this->holder.open(path);
+}
+
+void JsonParser::close(void)
+{
+	this->holder.close();
 }
 
 } // namespace njson

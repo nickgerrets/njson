@@ -11,7 +11,8 @@ using namespace njson;
 int on_no_arg(void)
 {
 	P("-- parsing...");
-	Json::pointer json = parse("json/test.json");
+	JsonParser parser("json/test.json");
+	Json::pointer json = parser.parse();
 	NL;
 	// json->print(std::cout);
 
@@ -61,9 +62,14 @@ int	main(int argc, char **argv)
 
 	JsonParser json_file(argv[1]);
 	Json::pointer json = json_file.parse();
-	if (!json_file.good() || !json)
+	if (json_file.has_error())
 	{
-		std::cout << "null-node" << std::endl;
+		std::cerr << json_file.get_error_msg() << std::endl;
+	}
+
+	if (!json)
+	{
+		std::cerr << "null-node" << std::endl;
 		return (EXIT_FAILURE);
 	}
 

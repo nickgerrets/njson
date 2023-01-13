@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <memory>
 #include <iostream>
+#include <fstream>
 
 namespace njson {
 
@@ -239,17 +240,23 @@ class JsonParser
 {
 	// ======================== CONSTRUCTOR ======================== //
 	public:
-		JsonParser() : holder(std::ifstream()), stream(holder) {}
-		JsonParser(std::string const& path) : holder(std::ifstream(path)), stream(holder) {}
-		JsonParser(char const* path) : JsonParser(std::string {path}) {}
-		JsonParser(std::istream& stream) : stream(stream) {}
+		JsonParser();
+		JsonParser(std::string const& path);
+		JsonParser(char const* path);
+		JsonParser(std::istream& stream);
 
 		JsonParser(JsonParser const& other) = delete;
 		JsonParser& operator=(JsonParser const& other) = delete;
 
 		~JsonParser() {}
 
-		bool good() const { return true; }
+		void open(std::string const& path);
+		void close(void);
+
+		std::istream& get_stream(void) { return stream; }
+
+		bool has_error() const { return error; }
+		std::string const& get_error_msg(void) const { return errmsg; }
 
 		Json::pointer parse(void);
 

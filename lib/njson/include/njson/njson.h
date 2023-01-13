@@ -271,6 +271,32 @@ class JsonParser
 		std::istream& stream;
 		bool error;
 		std::string errmsg;
+	
+	// Parsing states
+	private:
+		enum State
+		{
+			NONE,
+			OBJECT,
+			ARRAY,
+			STRING,
+			NUMBER,
+			WORD
+		};
+
+	// Parsing methods
+	private:
+
+		Json::pointer set_error(std::string const& str);
+
+		State get_state_from_c(char c);
+		Json::pointer run_state(State state);
+
+		Json::pointer state_object(void);
+		Json::pointer state_array(void);
+		Json::pointer state_string(void);
+		Json::pointer state_number(void);
+		Json::pointer state_word(void);
 };
 
 }	//	namespace njson

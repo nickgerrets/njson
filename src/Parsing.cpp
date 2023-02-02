@@ -52,7 +52,7 @@ Json::pointer JsonParser::set_error(std::string const& str)
 {
 	errmsg = str;
 	error = true;
-	return (Json::pointer(new Json()));
+	return (Json::null_ptr());
 }
 
 Json::pointer JsonParser::state_object(void)
@@ -236,13 +236,13 @@ JsonParser::JsonParser(std::istream& stream) : stream(stream), error(false), err
 
 Json::pointer	JsonParser::parse(void)
 {
+	if (error)
+		return Json::null_ptr();
 	if (!stream)
-	{
-		error = true;
-		errmsg = "bad input stream";
-		return Json::pointer(new Json());
-	}
+		return set_error("bad input stream");
 	stream >> std::ws;
+	if (stream.eof())
+		return Json::null_ptr();
 	return run_state(get_state_from_c(stream.get()));
 }
 

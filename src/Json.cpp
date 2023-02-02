@@ -97,13 +97,11 @@ void	Json::add_to_array(Json::pointer json)
 //	returns an null type Json reference if key can't be found.
 Json::pointer& Json::find(const key& key)
 {
-	static Json::pointer empty_p { new Json() };
-
 	if (get_type() != Type::OBJECT)
-		return (empty_p);
+		return (null_ref());
 	auto it = get<object>().find(key);
 	if (it == get<object>().end())
-		return (empty_p);
+		return (null_ref());
 	return (it->second);
 }
 

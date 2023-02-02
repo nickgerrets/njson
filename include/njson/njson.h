@@ -172,6 +172,12 @@ class Json
 		//	print the entire json-tree from this node (pretty = true also puts indentation and newlines)
 		void print(std::ostream& out = std::cout, bool pretty = true) const;
 
+		//	Allocation of a null-node pointer
+		static pointer null_ptr(void) { return pointer {new Json()}; };
+
+		//	Reference to a static null-node pointer
+		static pointer& null_ref(void) { static pointer null_p = null_ptr(); return null_p; };
+
 // =================== OPERATOR OVERLOADS ====================== //
 	public:
 		// returns true if the type isn't a null-type (so if there's data to get or not)

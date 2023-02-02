@@ -10,7 +10,13 @@ using namespace njson;
 
 int on_no_arg(void)
 {
-	P("-- parsing...");
+	P("-- parsing empty json:");
+	JsonParser parser_empty("json/empty.json");
+	Json::pointer json_empty = parser_empty.parse();
+	json_empty->print();
+	NL;
+
+	P("== parsing valid json ==");
 	JsonParser parser("json/test.json");
 	Json::pointer json = parser.parse();
 	NL;

@@ -3,10 +3,19 @@ A simple representation of JSON and a JSON file parser in C++.
 
 ## Example Usage
 
+Parsing a json file:
+	```
+	JsonParser parser("config.json");
+	if (parser.has_error())
+		return 1;
+	
+	Json::pointer root_node = parser.parse();
+	```
+
 Find the `string` key in the `json` node. `json` is a unique_ptr to an instance of the Json class with the object type (an unordered_map):
 
 	```
-	Json::pointer string_node = json->find("string");
+	Json::pointer& string_node = json->find("string");
 	```
 
 We can now validate the type of this node and get it's value:
@@ -27,7 +36,7 @@ We can also use `get<T>()` on objects and arrays to get a reference to the data 
 
 	```
 	// Json::array is a std::vector
-	Json::array server_nodes = json->find("servers")->get<Json::array>();
+	Json::array& server_nodes = json->find("servers")->get<Json::array>();
 
 	// And of course we can iterate and use range-based for-loops
 	for (Json::pointer const& n : server_nodes)

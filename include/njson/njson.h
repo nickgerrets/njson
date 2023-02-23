@@ -1,9 +1,12 @@
-#include <cstddef>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <unordered_map>
-#include <vector>
+#ifndef NJSON_H
+# define NJSON_H
+
+# include <cstddef>
+# include <fstream>
+# include <iostream>
+# include <memory>
+# include <unordered_map>
+# include <vector>
 
 namespace njson {
 
@@ -306,3 +309,5 @@ class JsonParser
 };
 
 } // namespace njson
+
+#endif // NJSON_H

@@ -1,8 +1,9 @@
-#include <vector>
-#include <unordered_map>
-#include <memory>
-#include <iostream>
+#include <cstddef>
 #include <fstream>
+#include <iostream>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 
 namespace njson {
 
@@ -111,27 +112,28 @@ class Json
 		template<> bool& get<bool>(void)				{ check_type<bool>(); return m_value.boolean; }
 
 		// CONST variant of get<T>() method
-		template<typename T> T const& get(void) const 				{ throw(json_exception("unsupported type")); }
-		template<> array const& get<array>(void) const				{ check_type<array>(); return m_value.array; }
-		template<> object const& get<object>(void) const			{ check_type<object>(); return m_value.object; }
-		template<> std::string const& get<std::string>(void) const	{ check_type<std::string>(); return m_value.str; }
-		template<> double const& get<double>(void) const			{ check_type<double>(); return m_value.d; }
-		template<> int const& get<int>(void) const					{ check_type<int>(); return m_value.i; }
-		template<> bool const& get<bool>(void) const				{ check_type<bool>(); return m_value.boolean; }
+		template<typename T> T const& get(void) const 						{ throw(json_exception("unsupported type")); }
+		template<> array const& get<array>(void) const						{ check_type<array>(); return m_value.array; }
+		template<> object const& get<object>(void) const					{ check_type<object>(); return m_value.object; }
+		template<> std::string const& get<std::string>(void) const			{ check_type<std::string>(); return m_value.str; }
+		template<> double const& get<double>(void) const					{ check_type<double>(); return m_value.d; }
+		template<> int const& get<int>(void) const							{ check_type<int>(); return m_value.i; }
+		template<> bool const& get<bool>(void) const						{ check_type<bool>(); return m_value.boolean; }
 
 		// returns true if the template argument type matches the type of the json node
-		template<typename T> bool is(void) const	{ return false; }
-		template<> bool is<array>(void) const		{ return (m_type == Type::ARRAY); }
-		template<> bool is<object>(void) const		{ return (m_type == Type::OBJECT); }
-		template<> bool is<std::string>(void) const	{ return (m_type == Type::STRING); }
-		template<> bool is<double>(void) const		{ return (m_type == Type::DOUBLE); }
-		template<> bool is<int>(void) const			{ return (m_type == Type::INT); }
-		template<> bool is<bool>(void) const		{ return (m_type == Type::BOOL); }
+		template<typename T> bool is(void) const		{ return false; }
+		template<> bool is<array>(void) const			{ return (m_type == Type::ARRAY); }
+		template<> bool is<object>(void) const			{ return (m_type == Type::OBJECT); }
+		template<> bool is<std::string>(void) const		{ return (m_type == Type::STRING); }
+		template<> bool is<double>(void) const			{ return (m_type == Type::DOUBLE); }
+		template<> bool is<int>(void) const				{ return (m_type == Type::INT); }
+		template<> bool is<bool>(void) const			{ return (m_type == Type::BOOL); }
+		template<> bool is<std::nullptr_t>(void) const	{ return (m_type == Type::NULL_T); }
 
 		// returns the enum-type of this Json node
 		Type get_type() const { return m_type; }
 
-		static std::string const get_type_string(Type type)
+		static std::string get_type_string(Type type)
 		{
 			switch (type)
 			{
@@ -146,7 +148,7 @@ class Json
 			}
 		}
 
-		std::string const get_type_string(void) { return get_type_string(this->get_type()); }
+		std::string get_type_string(void) const { return get_type_string(this->get_type()); }
 
 		// these functions can be used to add key-value pairs to a Json object
 		void add_to_object(const key& key, Json* json);
@@ -303,4 +305,4 @@ class JsonParser
 		Json::pointer state_word(void);
 };
 
-}	//	namespace njson
+} // namespace njson

@@ -12,13 +12,13 @@ int on_no_arg(void)
 {
 	P("-- parsing empty json:");
 	JsonParser parser_empty("json/empty.json");
-	Json::pointer json_empty = parser_empty.parse();
+	Json::pointer_t json_empty = parser_empty.parse();
 	json_empty->print();
 	NL;
 
 	P("== parsing valid json ==");
 	JsonParser parser("json/test.json");
-	Json::pointer json = parser.parse();
+	Json::pointer_t json = parser.parse();
 	NL;
 	// json->print(std::cout);
 
@@ -39,13 +39,13 @@ int on_no_arg(void)
 	NL;
 
 	P("-- find() 'string' node and get() string:");
-	std::cout << json->find("string")->get<std::string>() << std::endl;
+	std::cout << json->find("string")->get<Json::string>() << std::endl;
 	NL;
 
 	P("-- find() 'string' node and get() int (should throw):");
 	try
 	{
-		std::cout << json->find("string")->get<int>() << std::endl;
+		std::cout << json->find("string")->get<Json::number_int>() << std::endl;
 	}
 	catch(const Json::json_exception& e) { std::cerr << "json_exception: " << e.what() << std::endl; }
 	NL;
@@ -67,14 +67,12 @@ int	main(int argc, char **argv)
 		return on_no_arg();
 
 	JsonParser json_file(argv[1]);
-	Json::pointer json = json_file.parse();
-	if (json_file.has_error())
-	{
+	auto json = json_file.parse();
+	if (json_file.has_error()) {
 		std::cerr << json_file.get_error_msg() << std::endl;
 	}
 
-	if (!json)
-	{
+	if (!json) {
 		std::cerr << "null-node" << std::endl;
 		return (EXIT_FAILURE);
 	}

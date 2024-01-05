@@ -1,8 +1,12 @@
-#include <vector>
-#include <unordered_map>
-#include <memory>
-#include <iostream>
-#include <fstream>
+#ifndef NJSON_H
+# define NJSON_H
+
+# include <cstddef>
+# include <fstream>
+# include <iostream>
+# include <memory>
+# include <unordered_map>
+# include <vector>
 
 namespace njson {
 
@@ -26,69 +30,67 @@ class Json
 
 // =========================== TYPES =========================== //
 	public:
-		// key type, it's always going to be a string
-		using key =			std::string;
-
 		// pointer type, in this unique pointers are used. This is the return type of many functions
-		using pointer =		std::unique_ptr<Json>;
+		using pointer_t = std::unique_ptr<Json>;
+
+		using key_t = std::string;
 
 		// JSON types that can for example be used as template arguments in the public functions
-		using array =		std::vector<pointer>;
-		using object =		std::unordered_map<key, pointer>;
-		using string =		std::string;
-		using null =		std::nullptr_t;
-		// no reason to define double, int, bool
+		using array = std::vector<pointer_t>;
+		using object = std::unordered_map<key_t, pointer_t>;
+		using string = std::string;
+		using number_float = double;
+		using number_int = int64_t;
+		using number = number_float;
+		using null_t = std::nullptr_t;
 
 // =========================== ENUM  =========================== //
 	public:
 		// JSON types as enum
-		enum Type
-		{				// examples:
-			NULL_T,		// "key": null
-			ARRAY,		// "key": [1, 2, 3]
-			OBJECT,		// "key": { "a": 1, "b": 2, "c": 3}
-			STRING,		// "key": "hello there"
-			DOUBLE,		// "key": 123.456
-			INT,		// "key": 123
-			BOOL		// "key": false
+		enum Type {			// examples:
+			NULL_T,			// "key": null
+			ARRAY,			// "key": [1, 2, 3]
+			OBJECT,			// "key": { "a": 1, "b": 2, "c": 3}
+			STRING,			// "key": "hello there"
+			NUMBER_FLOAT,	// "key": 123.456
+			NUMBER_INT,		// "key": 123
+			BOOL			// "key": false
 		};
 
 // =========================== UNION =========================== //
 	private:
 		// The value union is how the Json class handles it's internal data
-		union Value
-		{
-			//	Constructors
+		union Value {
 			Value();
-			Value(array&& array);
-			Value(object&& object);
-			Value(const std::string& str);
-			Value(double d);
-			Value(int i);
+			Value(null_t _null);
+			Value(array&& _array);
+			Value(object&& _object);
+			Value(string const& _str);
+			Value(number_float n);
+			Value(number_int n);
 			Value(bool b);
 
-			//	Destructor
 			~Value();
 
-			//	Values
-			array		array;
-			object	object;
-			std::string	str;
-			double		d;
-			int			i;
-			bool		boolean;
+			array as_array;
+			object as_object;
+			string as_string;
+			number_float as_float;
+			number_int as_int;
+			bool as_bool;
 		};
 
 // ======================== CONSTRUCTOR ======================== //
 	public:
 		// Constructors
 		Json(); // basically a null-type json object
+		Json(null_t _null);
 		Json(array&& array);
 		Json(object&& object);
-		Json(const std::string& str);
+		Json(string const& str);
 		Json(const char* str);
-		Json(int i);
-		Json(double d);
+		Json(number_float d);
+		Json(number_int i);
 		Json(bool b);
 
 		Json(Json const& other) = delete; // delete copy constuctor
@@ -102,90 +104,68 @@ class Json
 		// returns a reference to the value of this json node as the type of the template argument
 		// if type is incorrect or unsupported, the functions THROWs
 		// if you don't want an exception, you can first check the type with: is<T>() or with get_type()
-		template<typename T> T& get(void) 				{ throw(json_exception("unsupported type")); }
-		template<> array& get<array>(void)				{ check_type<array>(); return m_value.array; }
-		template<> object& get<object>(void)			{ check_type<object>(); return m_value.object; }
-		template<> std::string& get<std::string>(void)	{ check_type<std::string>(); return m_value.str; }
-		template<> double& get<double>(void)			{ check_type<double>(); return m_value.d; }
-		template<> int& get<int>(void)					{ check_type<int>(); return m_value.i; }
-		template<> bool& get<bool>(void)				{ check_type<bool>(); return m_value.boolean; }
-
-		// CONST variant of get<T>() method
-		template<typename T> T const& get(void) const 				{ throw(json_exception("unsupported type")); }
-		template<> array const& get<array>(void) const				{ check_type<array>(); return m_value.array; }
-		template<> object const& get<object>(void) const			{ check_type<object>(); return m_value.object; }
-		template<> std::string const& get<std::string>(void) const	{ check_type<std::string>(); return m_value.str; }
-		template<> double const& get<double>(void) const			{ check_type<double>(); return m_value.d; }
-		template<> int const& get<int>(void) const					{ check_type<int>(); return m_value.i; }
-		template<> bool const& get<bool>(void) const				{ check_type<bool>(); return m_value.boolean; }
-
-		// returns true if the template argument type matches the type of the json node
-		template<typename T> bool is(void) const	{ return false; }
-		template<> bool is<array>(void) const		{ return (m_type == Type::ARRAY); }
-		template<> bool is<object>(void) const		{ return (m_type == Type::OBJECT); }
-		template<> bool is<std::string>(void) const	{ return (m_type == Type::STRING); }
-		template<> bool is<double>(void) const		{ return (m_type == Type::DOUBLE); }
-		template<> bool is<int>(void) const			{ return (m_type == Type::INT); }
-		template<> bool is<bool>(void) const		{ return (m_type == Type::BOOL); }
-
-		// returns the enum-type of this Json node
-		Type get_type() const { return m_type; }
-
-		static std::string const get_type_string(Type type)
-		{
-			switch (type)
-			{
-				case NULL_T:	return "null";
-				case ARRAY:		return "array";
-				case OBJECT:	return "object";
-				case STRING:	return "string";
-				case DOUBLE:	return "double";
-				case INT:		return "integer";
-				case BOOL:		return "boolean";
-				default:		return "UNKNOWN";
-			}
+		template<typename T> T& get(void) {
+			throw(json_exception("unsupported type"));
 		}
 
-		std::string const get_type_string(void) { return get_type_string(this->get_type()); }
+		// CONST variant of get<T>() method
+		template<typename T> T const& get(void) const {
+			throw(json_exception("unsupported type"));
+		}
+
+		// returns true if the template argument type matches the type of the json node
+		template<typename T> bool is(void) const {
+			return false;
+		}
+
+		// returns the enum-type of this Json node
+		Type get_type() const { return type; }
+
+		static std::string get_type_string(Type type);
+
+		std::string get_type_string(void) const { return get_type_string(this->get_type()); }
 
 		// these functions can be used to add key-value pairs to a Json object
-		void add_to_object(const key& key, Json* json);
-		void add_to_object(const key& key, Json::pointer json);
+		void add_to_object(const key_t& key, Json* json);
+		void add_to_object(const key_t& key, pointer_t json);
 
 		// these functions can be used to add values to a Json array
 		void add_to_array(Json* json);
-		void add_to_array(Json::pointer json);
+		void add_to_array(pointer_t json);
 
 // ============================ FIND =========================== //
 	public:
 		// find() method to get the value out of an object based on provided key
 		// if the key isn't found, it returns a null-type json node
-		pointer& find(key const& key);
+		pointer_t& find(key_t const& key);
 
 		//	Find method for chain-finding in nested objects
 		template<typename... Args>
-		pointer& find(key const& first, Args... keys)
-		{
+		pointer_t& find(key_t const& first, Args... keys) {
 			return (find(first)->find(keys...));
 		}
 
 		//	print the entire json-tree from this node (pretty = true also puts indentation and newlines)
 		void print(std::ostream& out = std::cout, bool pretty = true) const;
 
+		//	Allocation of a null-node pointer
+		static pointer_t null_ptr(void) { return pointer_t {new Json()}; };
+
+		//	Reference to a static null-node pointer
+		static pointer_t& null_ref(void) { static pointer_t null_p = null_ptr(); return null_p; };
+
 // =================== OPERATOR OVERLOADS ====================== //
 	public:
 		// returns true if the type isn't a null-type (so if there's data to get or not)
-		operator bool() const { return m_type != Type::NULL_T; }
+		operator bool() const { return type != Type::NULL_T; }
 
 		// just calls print on the stream (only difference is that print() actually flushes)
-		friend std::ostream& operator<<(std::ostream& stream, Json const& rhs)
-		{
+		friend std::ostream& operator<<(std::ostream& stream, Json const& rhs) {
 			rhs.print_impl(0, stream, true);
 			return (stream);
 		}
 
-		friend std::ostream& operator<<(std::ostream& stream, Json::pointer const& rhs)
-		{
+		friend std::ostream& operator<<(std::ostream& stream, pointer_t const& rhs) {
 			rhs->print_impl(0, stream, true);
 			return (stream);
 		}
@@ -193,14 +173,7 @@ class Json
 // ===================== PRIVATE HELPERS ======================= //
 	private:
 		// Check type THROWs when the type of the node doesn't match the template arg type
-		template<typename T> void check_type(void) const	{ }
-		template<> void check_type<array>(void) const		{ if (m_type != Type::ARRAY)	build_except(Type::ARRAY); }
-		template<> void check_type<object>(void) const		{ if (m_type != Type::OBJECT)	build_except(Type::OBJECT); }
-		template<> void check_type<std::string>(void) const	{ if (m_type != Type::STRING)	build_except(Type::STRING); }
-		template<> void check_type<double>(void) const		{ if (m_type != Type::DOUBLE)	build_except(Type::DOUBLE); }
-		template<> void check_type<int>(void) const			{ if (m_type != Type::INT)		build_except(Type::INT); }
-		template<> void check_type<bool>(void) const		{ if (m_type != Type::BOOL)		build_except(Type::BOOL); }
-		// template<> void check_type<std::nullptr_t>(void) const { return (m_type == Type::NULL_T); }
+		template<typename T> void check_type(void) const {}
 
 		//	Destruction of array and object types
 		void	destroy_array();
@@ -215,26 +188,23 @@ class Json
 // ======================== EXCEPTIONS ========================= //
 	public:
 		// this exception can get thrown by improper getting of json values (types don't match).
-		class json_exception : public std::runtime_error
-		{
+		class json_exception : public std::runtime_error {
 			public:
 				json_exception(std::string const& str) : runtime_error(str) {}
 		};
 	
 	private:
-		void build_except(Type given) const
-		{
+		void build_except(Type given) const {
 			throw(json_exception("incorrect type. Expected: "
-				+ get_type_string(m_type)
+				+ get_type_string(type)
 				+ ", given: "
 				+ get_type_string(given)));
 		}
 
 // ======================== MEMBER VARS ======================== //
 	private:
-		Type	m_type;
-		Value	m_value;
-
+		Type	type;
+		Value	value;
 };
 
 /*
@@ -266,7 +236,7 @@ class JsonParser
 		bool has_error() const { return error; }
 		std::string const& get_error_msg(void) const { return errmsg; }
 
-		Json::pointer parse(void);
+		Json::pointer_t parse(void);
 
 	// ========================== MEMBERS ========================== //
 	private:
@@ -277,8 +247,7 @@ class JsonParser
 	
 	// ========================== PARSING ========================== //
 	private:
-		enum State
-		{
+		enum State {
 			NONE,
 			OBJECT,
 			ARRAY,
@@ -287,14 +256,16 @@ class JsonParser
 			WORD
 		};
 
-		Json::pointer set_error(std::string const& str);
+		Json::pointer_t set_error(std::string const& str);
 		State get_state_from_c(char c);
-		Json::pointer run_state(State state);
-		Json::pointer state_object(void);
-		Json::pointer state_array(void);
-		Json::pointer state_string(void);
-		Json::pointer state_number(void);
-		Json::pointer state_word(void);
+		Json::pointer_t run_state(State state);
+		Json::pointer_t state_object(void);
+		Json::pointer_t state_array(void);
+		Json::pointer_t state_string(void);
+		Json::pointer_t state_number(void);
+		Json::pointer_t state_word(void);
 };
 
-}	//	namespace njson
+} // namespace njson
+
+#endif // NJSON_H

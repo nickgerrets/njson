@@ -1,5 +1,6 @@
-test
 .vscode/
+.cache/
+build/
 
 # Prerequisites
 *.d

@@ -5,7 +5,7 @@
 # include <fstream>
 # include <iostream>
 # include <memory>
-# include <unordered_map>
+# include <map>
 # include <vector>
 
 namespace njson {
@@ -37,7 +37,7 @@ class Json
 
 		// JSON types that can for example be used as template arguments in the public functions
 		using array = std::vector<pointer_t>;
-		using object = std::unordered_map<key_t, pointer_t>;
+		using object = std::map<key_t, pointer_t>;
 		using string = std::string;
 		using number_float = double;
 		using number_int = int64_t;
@@ -62,7 +62,6 @@ class Json
 		// The value union is how the Json class handles it's internal data
 		union Value {
 			Value();
-			Value(null_t _null);
 			Value(array&& _array);
 			Value(object&& _object);
 			Value(string const& _str);
@@ -85,12 +84,21 @@ class Json
 		// Constructors
 		Json(); // basically a null-type json object
 		Json(null_t _null);
-		Json(array&& array);
-		Json(object&& object);
+		explicit Json(array&& array);
+		explicit Json(object&& object);
 		Json(string const& str);
 		Json(const char* str);
-		Json(number_float d);
-		Json(number_int i);
+
+		template <
+			typename INTEGRAL,
+			typename std::enable_if<std::is_integral<INTEGRAL>::value>::type* = nullptr>
+		Json(INTEGRAL i) : type(Type::NUMBER_INT) , value(number_int(i)) {}
+
+		template <
+			typename FLOATING,
+			typename std::enable_if<std::is_floating_point<FLOATING>::value>::type* = nullptr>
+		Json(FLOATING f) : type(Type::NUMBER_FLOAT) , value(number_float(f)) {}
+
 		Json(bool b);
 
 		Json(Json const& other) = delete; // delete copy constuctor
@@ -132,6 +140,24 @@ class Json
 		// these functions can be used to add values to a Json array
 		void add_to_array(Json* json);
 		void add_to_array(pointer_t json);
+
+		// Object insert
+		template <typename T>
+		void insert(key_t const& key, T _value) {
+			if (get_type() != Type::OBJECT) {
+				throw json_exception("Can't insert key-value pair, not an object!");
+			}
+			this->value.as_object.insert({key, pointer_t(new Json(_value))});
+		}
+
+		// Array insert
+		template <typename T>
+		void insert(T _value) {
+			if (get_type() != Type::ARRAY) {
+				throw json_exception("Can't insert value, not an array!");
+			}
+			this->value.as_array.push_back(pointer_t(new Json(_value)));
+		}
 
 // ============================ FIND =========================== //
 	public:

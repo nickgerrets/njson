@@ -10,6 +10,7 @@ std::string Json::indentation_string = "\t";
 /*                             Value Constructors                             */
 /* -------------------------------------------------------------------------- */
 
+Json::Value::Value() : as_int(0) {}
 Json::Value::Value(Json::array&& _array) : as_array(std::move(_array)) {}
 Json::Value::Value(Json::object&& _object) : as_object(std::move(_object)) {}
 Json::Value::Value(Json::string const& _str) : as_string(_str) {}
@@ -33,8 +34,8 @@ Json::Json() : type(Type::NULL_T) {}
 Json::Json(null_t _null __attribute__((unused))) : type(Type::NULL_T) {}
 Json::Json(string const& str) : type(Type::STRING), value(str) {}
 Json::Json(const char* str) : type(Type::STRING), value(string {str}) {}
-Json::Json(number_float f) : type(Type::NUMBER_FLOAT) , value(f) {}
-Json::Json(number_int i) : type(Type::NUMBER_INT) , value(i) {}
+// Json::Json(number_float f) : type(Type::NUMBER_FLOAT) , value(f) {}
+// Json::Json(number_int i) : type(Type::NUMBER_INT) , value(i) {}
 Json::Json(bool b) : type(Type::BOOL) , value(b) {}
 
 //	Destructor
@@ -198,8 +199,8 @@ std::string Json::get_type_string(Type type) {
 		case ARRAY:			return "array";
 		case OBJECT:		return "object";
 		case STRING:		return "string";
-		case NUMBER_FLOAT:	return "double";
-		case NUMBER_INT:	return "integer";
+		case NUMBER_FLOAT:	return "number (floating)";
+		case NUMBER_INT:	return "number (integer)";
 		case BOOL:			return "boolean";
 		default:			return "UNKNOWN";
 	}
@@ -264,10 +265,10 @@ void Json::print_depth(size_t depth, std::ostream& out) const {
 void Json::print_impl(size_t depth, std::ostream& out, bool pretty) const {
 	switch (get_type()) {
 		case Type::NUMBER_FLOAT :
-			out << std::setprecision(15) << get<double>();
+			out << std::setprecision(15) << get<number_float>();
 			break;
 		case Type::NUMBER_INT :
-			out << get<int>();
+			out << get<number_int>();
 			break;
 		case Type::BOOL :
 			if (get<bool>())
@@ -276,7 +277,7 @@ void Json::print_impl(size_t depth, std::ostream& out, bool pretty) const {
 				out << "false";
 			break;
 		case Type::STRING :
-			out << '"' << get<std::string>() << '"';
+			out << '"' << get<string>() << '"';
 			break;
 		case Type::OBJECT :
 			print_object(depth, out, pretty);

@@ -8,8 +8,8 @@
 
 using namespace njson;
 
-int on_no_arg(void)
-{
+int on_no_arg(void) {
+
 	P("-- parsing empty json:");
 	JsonParser parser_empty("json/empty.json");
 	Json::pointer_t json_empty = parser_empty.parse();
@@ -18,7 +18,11 @@ int on_no_arg(void)
 
 	P("== parsing valid json ==");
 	JsonParser parser("json/test.json");
-	Json::pointer_t json = parser.parse();
+	if (parser.has_error()) {
+		std::cout << parser.get_error_msg() << std::endl;
+		return 1;
+	}
+	auto json = parser.parse();
 	NL;
 	// json->print(std::cout);
 
@@ -58,11 +62,21 @@ int on_no_arg(void)
 	std::cout << std::boolalpha << json->is<Json::array>() << std::endl;
 	NL;
 
+	P("-- insert key 'int' with value of 5, then print:");
+	int x = 5;
+	json->insert("int", x);
+	json->find("int")->print();
+
+	P("-- insert boolean true into array with key 'arr', then print array:");
+	json->find("arr")->insert(true);
+	json->find("arr")->print();
+
 	return (EXIT_SUCCESS);
 }
 
-int	main(int argc, char **argv)
-{
+int	main(int argc, char **argv) {
+	Json::set_indentation_string("  ");
+
 	if (argc < 2)
 		return on_no_arg();
 

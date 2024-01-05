@@ -1,0 +1,10 @@
+{
+	"_": "This is a json string!",
+	"object" : {
+		"object+" : {
+			"string": "Hello there!"
+		}
+	},
+	"arr": [1, 2, 3, 4, {}],
+	"string": "I'm not an integer!"
+}

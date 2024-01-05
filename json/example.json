@@ -1,0 +1,9 @@
+{
+	"key": "value",
+	"n": 20,
+	"f": 20.20,
+	"arr": [1, 2, 3, 4, {}],
+	"obj": {
+		"cheese": "cheeeeeese!"
+	}
+}

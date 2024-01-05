@@ -4,10 +4,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 project(njson VERSION 1.0 DESCRIPTION "easy json!")
 
-add_library(${PROJECT_NAME}
-	src/Json.cpp
-	src/Parsing.cpp
-)
+add_library(${PROJECT_NAME})
+add_subdirectory(src)
 
 target_include_directories(${PROJECT_NAME}
 	PUBLIC
